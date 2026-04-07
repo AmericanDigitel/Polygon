@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Address Coverage Checker</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --bg: #f4f7fb; --card: #ffffff; --text: #122033; --muted: #64748b; --line: #dbe3ef;
+      --primary: #1d4ed8; --primary-2: #2563eb; --success-bg: #dcfce7; --success-tx: #166534;
+      --error-bg: #fee2e2; --error-tx: #991b1b; --neutral-bg: #eff6ff; --neutral-tx: #1e3a8a;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, Arial, sans-serif; background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%); color: var(--text); }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 28px 20px 36px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 22px; }
+    .brand h1 { margin: 0 0 6px; font-size: 34px; }
+    .brand p { margin: 0; color: var(--muted); font-size: 16px; }
+    .top-actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .chip { background:#fff; color:var(--text); border:1px solid var(--line); padding:12px 16px; border-radius:12px; font-weight:700; }
+    .admin-link, .logout-btn { text-decoration: none; background: #fff; color: var(--text); border: 1px solid var(--line); padding: 12px 16px; border-radius: 12px; font-weight: 700; box-shadow: 0 10px 20px rgba(15, 23, 42, 0.04); cursor:pointer; }
+    .layout { display: grid; grid-template-columns: 430px 1fr; gap: 22px; }
+    .card { background: var(--card); border: 1px solid rgba(219,227,239,.9); border-radius: 24px; box-shadow: 0 20px 45px rgba(15, 23, 42, 0.06); padding: 24px; }
+    .eyebrow { display: inline-block; padding: 8px 12px; border-radius: 999px; background: #eff6ff; color: var(--primary); font-weight: 800; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+    h2 { margin: 14px 0 8px; font-size: 28px; }
+    h3 { margin: 0 0 12px; font-size: 20px; }
+    .subtext { color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
+    label { display: block; font-weight: 800; margin: 16px 0 8px; }
+    input[type="text"] { width: 100%; padding: 16px 18px; border-radius: 16px; border: 1px solid var(--line); font-size: 18px; outline: none; }
+    input[type="text"]:focus { border-color: #93c5fd; box-shadow: 0 0 0 4px rgba(37,99,235,.08); }
+    .btn-row { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+    button { border: none; border-radius: 16px; padding: 14px 18px; font-weight: 800; cursor: pointer; font-size: 17px; }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; }
+    .btn-secondary { background: #eef2f7; color: var(--text); }
+    .status { margin-top: 18px; padding: 16px 18px; border-radius: 18px; font-weight: 800; line-height: 1.5; }
+    .success { background: var(--success-bg); color: var(--success-tx); }
+    .error { background: var(--error-bg); color: var(--error-tx); }
+    .neutral { background: var(--neutral-bg); color: var(--neutral-tx); }
+    .meta { margin-top: 16px; color: var(--text); line-height: 1.7; }
+    .pill { display: inline-block; margin: 6px 8px 0 0; padding: 7px 12px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-size: 13px; font-weight: 800; }
+    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+    .stat { background: #f8fbff; border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
+    .stat .num { font-size: 28px; font-weight: 900; }
+    .stat .lbl { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .history { margin-top:18px; border-top:1px solid var(--line); padding-top:18px; }
+    .history-item { padding:12px 0; border-bottom:1px solid #edf2f7; }
+    .history-item:last-child { border-bottom:none; }
+    .history-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    .history-address { font-weight:800; }
+    .history-time { color:var(--muted); font-size:13px; text-align:right; }
+    .history-match { margin-top:6px; color:var(--muted); font-size:14px; }
+    #map { min-height: 720px; width: 100%; border-radius: 22px; }
+    @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } #map { min-height: 460px; } .topbar { flex-direction: column; align-items: flex-start; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <h1>Address Coverage Checker</h1>
+        <p>Check whether an address falls inside one of your saved coverage zones.</p>
+      </div>
+      <div class="top-actions">
+        <div id="userChip" class="chip">Loading user...</div>
+        <a class="admin-link" href="/admin">Manage polygons</a>
+        <button class="logout-btn" onclick="logout()">Log out</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="card">
+        <span class="eyebrow">Coverage lookup</span>
+        <h2>Check an address</h2>
+        <div class="subtext">Enter an address below. The system will geocode it, compare it against all saved polygons, and return a clean inside or outside result.</div>
+        <label for="addressInput">Address</label>
+        <input id="addressInput" type="text" placeholder="123 Main St, Irvine, CA" />
+        <div class="btn-row">
+          <button class="btn-primary" onclick="checkAddress()">Check address</button>
+          <button class="btn-secondary" onclick="fitPolygons()">Zoom to coverage</button>
+        </div>
+        <div id="result" class="status neutral">Enter an address and click Check address.</div>
+        <div id="resultMeta" class="meta"></div>
+        <div class="stats">
+          <div class="stat"><div id="polygonCount" class="num">0</div><div class="lbl">Saved polygons</div></div>
+          <div class="stat"><div id="loadedStatus" class="num">Ready</div><div class="lbl">System status</div></div>
+        </div>
+        <div class="history">
+          <h3>Recent checks</h3>
+          <div id="historyList" class="subtext">No checks yet.</div>
+        </div>
+      </div>
+      <div class="card"><div id="map"></div></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([33.6846, -117.8265], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let polygonsLayer = L.geoJSON(null, {
+      style: { color: '#2563eb', weight: 2, fillColor: '#60a5fa', fillOpacity: 0.25 },
+      onEachFeature: (feature, layer) => {
+        const name = feature?.properties?.name || 'Unnamed polygon';
+        layer.bindPopup(name);
+      }
+    }).addTo(map);
+    let markerLayer = L.layerGroup().addTo(map);
+
+    async function requireAuth() {
+      const res = await fetch('/api/me');
+      if (res.status === 401) {
+        window.location.href = '/login';
+        throw new Error('Not logged in');
+      }
+      const user = await res.json();
+      document.getElementById('userChip').innerText = `${user.full_name} · ${user.email}`;
+      return user;
+    }
+
+    async function loadPolygons() {
+      const res = await fetch('/api/polygons');
+      if (res.status === 401) { window.location.href = '/login'; return; }
+      const data = await res.json();
+      polygonsLayer.clearLayers();
+      polygonsLayer.addData(data);
+      const count = (data.features || []).length;
+      document.getElementById('polygonCount').innerText = count;
+      document.getElementById('loadedStatus').innerText = count ? 'Loaded' : 'Empty';
+      if (count) fitPolygons();
+    }
+
+    async function loadHistory() {
+      const res = await fetch('/api/my-checks');
+      if (res.status === 401) { window.location.href = '/login'; return; }
+      const rows = await res.json();
+      const el = document.getElementById('historyList');
+      if (!rows.length) {
+        el.innerHTML = '<div class="subtext">No checks yet.</div>';
+        return;
+      }
+      el.innerHTML = rows.map(row => `
+        <div class="history-item">
+          <div class="history-top">
+            <div>
+              <div class="history-address">${escapeHtml(row.input_address)}</div>
+              <div class="history-match">${row.matched ? 'Matched' : 'Outside'}${row.matched_polygon_names.length ? ' · ' + row.matched_polygon_names.map(escapeHtml).join(', ') : ''}</div>
+            </div>
+            <div class="history-time">${formatDate(row.created_at)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function checkAddress() {
+      const address = document.getElementById('addressInput').value.trim();
+      if (!address) {
+        alert('Enter an address first.');
+        return;
+      }
+      const res = await fetch('/api/check-address', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address })
+      });
+      if (res.status === 401) { window.location.href = '/login'; return; }
+      const data = await res.json();
+      const resultEl = document.getElementById('result');
+      const metaEl = document.getElementById('resultMeta');
+      markerLayer.clearLayers();
+
+      if (!res.ok) {
+        resultEl.className = 'status error';
+        resultEl.innerText = data.detail || 'Check failed.';
+        metaEl.innerHTML = '';
+        return;
+      }
+
+      const marker = L.marker([data.geocode.lat, data.geocode.lng]).addTo(markerLayer);
+      marker.bindPopup(data.normalized_address || data.address).openPopup();
+      map.panTo([data.geocode.lat, data.geocode.lng]);
+
+      if (data.matched) {
+        resultEl.className = 'status success';
+        resultEl.innerText = 'Matched: this address is inside at least one saved polygon.';
+      } else {
+        resultEl.className = 'status error';
+        resultEl.innerText = 'Outside: this address is not inside any saved polygon.';
+      }
+
+      const names = (data.matched_polygon_names || []).map(name => `<span class="pill">${escapeHtml(name)}</span>`).join('');
+      metaEl.innerHTML = `
+        <div><strong>Normalized address:</strong> ${escapeHtml(data.normalized_address || data.address)}</div>
+        <div><strong>Coordinates:</strong> ${data.geocode.lat.toFixed(6)}, ${data.geocode.lng.toFixed(6)}</div>
+        <div><strong>Polygons checked:</strong> ${data.total_polygons_checked}</div>
+        <div><strong>Matched polygons:</strong> ${names || 'None'}</div>
+      `;
+      loadHistory();
+    }
+
+    function fitPolygons() {
+      if (polygonsLayer.getLayers().length) {
+        map.fitBounds(polygonsLayer.getBounds(), { padding: [20, 20] });
+      }
+    }
+
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login';
+    }
+
+    function formatDate(value) {
+      const d = new Date(value);
+      return Number.isNaN(d.getTime()) ? value : d.toLocaleString();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    async function boot() {
+      await requireAuth();
+      await loadPolygons();
+      await loadHistory();
+    }
+
+    boot();
+  </script>
+</body>
+</html>

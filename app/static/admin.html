@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Polygons</title>
+  <style>
+    :root {
+      --bg:#f4f7fb; --card:#ffffff; --text:#122033; --muted:#64748b; --line:#dbe3ef;
+      --primary:#1d4ed8; --primary2:#2563eb; --danger:#ef4444; --successbg:#dcfce7; --successtx:#166534;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter, Arial, sans-serif; background:linear-gradient(180deg,#f8fbff 0%,var(--bg) 100%); color:var(--text); }
+    .shell { max-width:1100px; margin:0 auto; padding:28px 20px 36px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:20px; }
+    .brand h1 { margin:0 0 8px; font-size:32px; }
+    .brand p { margin:0; color:var(--muted); }
+    .actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .chip, .linkbtn, .logout-btn { background:#fff; border:1px solid var(--line); color:var(--text); padding:12px 16px; border-radius:12px; font-weight:700; text-decoration:none; cursor:pointer; }
+    .card { background:var(--card); border:1px solid rgba(219,227,239,.9); border-radius:24px; box-shadow:0 20px 45px rgba(15,23,42,.06); padding:24px; }
+    .eyebrow { display:inline-block; padding:8px 12px; border-radius:999px; background:#eff6ff; color:var(--primary); font-weight:800; font-size:12px; letter-spacing:.04em; text-transform:uppercase; }
+    h2 { margin:14px 0 10px; font-size:28px; }
+    .subtext { color:var(--muted); line-height:1.6; margin-bottom:18px; }
+    label { display:block; font-weight:800; margin:16px 0 8px; }
+    input[type=file] { width:100%; padding:16px; border:1px solid var(--line); border-radius:16px; background:#fff; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; }
+    button { border:none; border-radius:16px; padding:14px 18px; font-weight:800; cursor:pointer; font-size:17px; }
+    .btn-primary { background:linear-gradient(135deg,var(--primary),var(--primary2)); color:#fff; }
+    .btn-secondary { background:#eef2f7; color:var(--text); }
+    .btn-danger { background:var(--danger); color:#fff; }
+    .status { margin-top:18px; padding:16px 18px; border-radius:18px; background:var(--successbg); color:var(--successtx); font-weight:800; }
+    .list { margin-top:24px; }
+    .item { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:18px 22px; border:1px solid var(--line); border-radius:20px; margin-bottom:14px; background:#fff; }
+    .name { font-size:20px; font-weight:900; }
+    .meta { color:var(--muted); margin-top:6px; }
+    @media (max-width: 780px) { .topbar { flex-direction:column; align-items:flex-start; } .item { flex-direction:column; align-items:flex-start; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <h1>Polygon Management</h1>
+        <p>Upload, review, and delete saved service area polygons.</p>
+      </div>
+      <div class="actions">
+        <div id="userChip" class="chip">Loading user...</div>
+        <a class="linkbtn" href="/">Back to checker</a>
+        <button class="logout-btn" onclick="logout()">Log out</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="eyebrow">Admin tools</span>
+      <h2>Add polygons to the system</h2>
+      <div class="subtext">Upload a GeoJSON or KML file. New uploads are added to the saved list and are available for all logged-in users.</div>
+
+      <label for="fileInput">GeoJSON or KML file</label>
+      <input id="fileInput" type="file" accept=".geojson,.json,.kml" />
+
+      <div class="row">
+        <button class="btn-primary" onclick="uploadPolygons()">Add polygons</button>
+        <button class="btn-secondary" onclick="refreshList()">Refresh list</button>
+        <button class="btn-danger" onclick="deleteAll()">Delete all</button>
+      </div>
+
+      <div id="status" class="status">Ready.</div>
+
+      <div class="list">
+        <h2>Saved polygons</h2>
+        <div id="polygonList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function requireAuth() {
+      const res = await fetch('/api/me');
+      if (res.status === 401) { window.location.href = '/login'; throw new Error('Not logged in'); }
+      const user = await res.json();
+      document.getElementById('userChip').innerText = `${user.full_name} · ${user.email}`;
+    }
+
+    async function refreshList() {
+      const res = await fetch('/api/polygon-list');
+      if (res.status === 401) { window.location.href = '/login'; return; }
+      const items = await res.json();
+      const container = document.getElementById('polygonList');
+      if (!items.length) {
+        container.innerHTML = '<div class="subtext">No polygons saved yet.</div>';
+        return;
+      }
+      container.innerHTML = items.map(item => `
+        <div class="item">
+          <div>
+            <div class="name">${escapeHtml(item.name)}</div>
+            <div class="meta">${escapeHtml(item.geometry_type)}${item.source_file ? ' · from ' + escapeHtml(item.source_file) : ''}</div>
+          </div>
+          <button class="btn-danger" onclick="deletePolygon('${item.id}')">Delete</button>
+        </div>
+      `).join('');
+      setStatus(`${items.length} polygon(s) currently saved.`);
+    }
+
+    async function uploadPolygons() {
+      const input = document.getElementById('fileInput');
+      if (!input.files.length) {
+        alert('Choose a file first.');
+        return;
+      }
+      const form = new FormData();
+      form.append('file', input.files[0]);
+      const res = await fetch('/api/polygons/upload', { method:'POST', body: form });
+      if (res.status === 401) { window.location.href = '/login'; return; }
+      const data = await res.json();
+      if (!res.ok) {
+        setStatus(data.detail || 'Upload failed.');
+        return;
+      }
+      setStatus(data.message + ' Total saved: ' + data.total_polygon_count);
+      input.value = '';
+      refreshList();
+    }
+
+    async function deletePolygon(id) {
+      if (!confirm('Delete this polygon?')) return;
+      const res = await fetch(`/api/polygons/${id}`, { method:'DELETE' });
+      if (res.status === 401) { window.location.href = '/login'; return; }
+      const data = await res.json();
+      setStatus(data.message || 'Polygon deleted.');
+      refreshList();
+    }
+
+    async function deleteAll() {
+      if (!confirm('Delete all polygons?')) return;
+      const res = await fetch('/api/polygons', { method:'DELETE' });
+      if (res.status === 401) { window.location.href = '/login'; return; }
+      const data = await res.json();
+      setStatus(data.message || 'All polygons deleted.');
+      refreshList();
+    }
+
+    async function logout() {
+      await fetch('/api/logout', { method:'POST' });
+      window.location.href = '/login';
+    }
+
+    function setStatus(message) {
+      document.getElementById('status').innerText = message;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    async function boot() {
+      await requireAuth();
+      await refreshList();
+    }
+    boot();
+  </script>
+</body>
+</html>

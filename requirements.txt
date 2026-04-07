@@ -1,0 +1,6 @@
+fastapi[standard]==0.116.1
+requests==2.32.5
+shapely==2.1.2
+python-multipart==0.0.20
+email-validator==2.2.0
+itsdangerous==2.2.0
