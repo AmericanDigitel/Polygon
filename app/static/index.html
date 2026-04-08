@@ -7,238 +7,332 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     :root {
-      --bg: #f4f7fb; --card: #ffffff; --text: #122033; --muted: #64748b; --line: #dbe3ef;
-      --primary: #1d4ed8; --primary-2: #2563eb; --success-bg: #dcfce7; --success-tx: #166534;
-      --error-bg: #fee2e2; --error-tx: #991b1b; --neutral-bg: #eff6ff; --neutral-tx: #1e3a8a;
+      --primary: #2563eb; --primary-dk: #1d4ed8; --primary-lt: #eff6ff;
+      --text: #0f172a; --muted: #64748b; --muted2: #94a3b8;
+      --bg: #f8fafc; --card: #ffffff; --line: #e2e8f0;
+      --green: #16a34a; --green-lt: #f0fdf4; --green-ring: #bbf7d0;
+      --red: #dc2626; --red-lt: #fef2f2; --red-ring: #fecaca;
+      --blue-lt: #eff6ff; --blue-ring: #bfdbfe;
+      --nav-h: 60px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Inter, Arial, sans-serif; background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%); color: var(--text); }
+    html, body { height: 100%; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Inter", Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
 
-    /* TOP BAR */
-    .topbar {
-      display: flex; justify-content: space-between; align-items: center; gap: 16px;
-      padding: 14px 28px; background: #fff; border-bottom: 1px solid var(--line); flex-wrap: wrap;
+    /* ── TOP NAV ── */
+    .nav {
+      height: var(--nav-h); flex-shrink: 0;
+      background: #fff; border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; padding: 0 20px; gap: 0;
+      position: sticky; top: 0; z-index: 100;
     }
-    .topbar-left { display: flex; align-items: center; gap: 14px; }
-    .logo { font-size: 20px; font-weight: 900; color: var(--primary); text-decoration: none; }
-    .breadcrumb { color: var(--muted); font-size: 14px; }
-    .breadcrumb a { color: var(--primary); text-decoration: none; font-weight: 700; }
-    .project-title { font-weight: 800; font-size: 15px; }
-    .top-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .chip { background: #f1f5f9; color: var(--text); padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 13px; }
-    .topbtn { text-decoration: none; background: #fff; color: var(--text); border: 1px solid var(--line); padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
-    .topbtn:hover { background: #f8fafc; }
+    .nav-back {
+      display: flex; align-items: center; gap: 6px; text-decoration: none;
+      color: var(--muted); font-size: 13px; font-weight: 600; padding: 6px 12px;
+      border-radius: 8px; border: 1px solid var(--line); margin-right: 14px; white-space: nowrap;
+    }
+    .nav-back:hover { background: var(--bg); color: var(--text); }
+    .nav-back svg { flex-shrink: 0; }
+    .nav-divider { width: 1px; height: 22px; background: var(--line); margin: 0 14px; flex-shrink: 0; }
+    .nav-project { font-size: 15px; font-weight: 800; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: 14px; }
+    .nav-pill {
+      display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600;
+      padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line);
+      text-decoration: none; color: var(--text); background: #fff; cursor: pointer; white-space: nowrap;
+    }
+    .nav-pill:hover { background: var(--bg); }
+    .nav-pill.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .nav-pill.primary:hover { background: var(--primary-dk); }
+    .nav-user { font-size: 13px; font-weight: 600; color: var(--muted); padding: 0 4px; }
 
-    /* LAYOUT */
-    .shell { max-width: 1320px; margin: 0 auto; padding: 24px 20px 36px; }
-    .layout { display: grid; grid-template-columns: 420px 1fr; gap: 20px; }
-    .card { background: var(--card); border: 1px solid rgba(219,227,239,.9); border-radius: 22px; box-shadow: 0 16px 40px rgba(15,23,42,.06); padding: 22px; }
+    /* ── APP BODY — full height below nav ── */
+    .app-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
 
-    .eyebrow { display: inline-block; padding: 6px 12px; border-radius: 999px; background: #eff6ff; color: var(--primary); font-weight: 800; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; }
-    h2 { margin: 12px 0 6px; font-size: 26px; }
-    h3 { margin: 0 0 10px; font-size: 18px; }
-    .subtext { color: var(--muted); line-height: 1.6; margin-bottom: 16px; font-size: 15px; }
-    label { display: block; font-weight: 800; margin: 14px 0 7px; font-size: 14px; }
-    input[type="text"] { width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line); font-size: 17px; outline: none; font-family: inherit; }
-    input[type="text"]:focus { border-color: #93c5fd; box-shadow: 0 0 0 4px rgba(37,99,235,.08); }
+    /* ── LEFT PANEL ── */
+    .panel {
+      width: 380px; flex-shrink: 0; background: #fff; border-right: 1px solid var(--line);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
 
-    .btn-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-    button { border: none; border-radius: 14px; padding: 12px 16px; font-weight: 800; cursor: pointer; font-size: 16px; font-family: inherit; }
-    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; }
-    .btn-secondary { background: #eef2f7; color: var(--text); }
+    /* Panel tabs */
+    .tabs { display: flex; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+    .tab {
+      flex: 1; padding: 12px 16px; font-size: 13px; font-weight: 700; text-align: center;
+      cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px;
+      user-select: none;
+    }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
 
-    .status { margin-top: 16px; padding: 14px 16px; border-radius: 16px; font-weight: 800; line-height: 1.5; font-size: 15px; }
-    .success { background: var(--success-bg); color: var(--success-tx); }
-    .error { background: var(--error-bg); color: var(--error-tx); }
-    .neutral { background: var(--neutral-bg); color: var(--neutral-tx); }
+    /* Tab panes */
+    .tab-pane { display: none; flex: 1; overflow-y: auto; padding: 20px; flex-direction: column; gap: 16px; }
+    .tab-pane.active { display: flex; }
 
-    .meta { margin-top: 14px; color: var(--text); line-height: 1.7; font-size: 14px; }
-    .pill { display: inline-block; margin: 4px 6px 0 0; padding: 5px 10px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-size: 12px; font-weight: 800; }
+    /* Address check form */
+    .field-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+    .addr-input {
+      width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px;
+      font-size: 15px; font-family: inherit; outline: none;
+    }
+    .addr-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
 
-    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 16px; }
-    .stat { background: #f8fbff; border: 1px solid var(--line); border-radius: 16px; padding: 12px; }
-    .stat .num { font-size: 26px; font-weight: 900; }
-    .stat .lbl { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .btn-check {
+      width: 100%; background: var(--primary); color: #fff; font-size: 15px; font-weight: 700;
+      padding: 12px; border-radius: 10px; border: none; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; gap: 7px;
+    }
+    .btn-check:hover { background: var(--primary-dk); }
+    .btn-check:disabled { opacity: .6; cursor: not-allowed; }
 
-    .history { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 16px; }
-    .history-item { padding: 10px 0; border-bottom: 1px solid #edf2f7; }
-    .history-item:last-child { border-bottom: none; }
-    .history-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
-    .history-address { font-weight: 800; font-size: 14px; }
-    .history-time { color: var(--muted); font-size: 12px; text-align: right; flex-shrink: 0; }
-    .history-match { margin-top: 4px; color: var(--muted); font-size: 13px; }
-    .match-yes { color: #166534; }
-    .match-no { color: #991b1b; }
+    /* Result box */
+    .result-box {
+      border-radius: 12px; padding: 14px 16px; font-weight: 700; font-size: 14px; line-height: 1.5;
+      background: var(--blue-lt); color: #1e40af; border: 1px solid var(--blue-ring);
+    }
+    .result-box.inside { background: var(--green-lt); color: var(--green); border-color: var(--green-ring); }
+    .result-box.outside { background: var(--red-lt); color: var(--red); border-color: var(--red-ring); }
+    .result-box.loading { opacity: .7; }
 
-    #map { min-height: 700px; width: 100%; border-radius: 20px; }
+    .result-detail { font-size: 13px; color: var(--muted); line-height: 1.8; }
+    .result-detail strong { color: var(--text); }
+    .pill { display: inline-block; background: #e0e7ff; color: #3730a3; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; margin: 2px 3px 0 0; }
 
-    @media (max-width: 980px) {
-      .layout { grid-template-columns: 1fr; }
-      #map { min-height: 440px; }
-      .topbar { padding: 12px 16px; }
+    /* Stats row */
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+    .stat-num { font-size: 22px; font-weight: 900; }
+    .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+
+    /* Zoom btn */
+    .btn-zoom {
+      width: 100%; background: var(--bg); color: var(--text); font-size: 13px; font-weight: 600;
+      padding: 10px; border-radius: 10px; border: 1px solid var(--line); cursor: pointer;
+    }
+    .btn-zoom:hover { background: var(--line); }
+
+    /* History tab */
+    .hist-empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+    .hist-item { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+    .hist-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .hist-addr { font-size: 14px; font-weight: 700; }
+    .hist-time { font-size: 11px; color: var(--muted2); flex-shrink: 0; }
+    .hist-status { font-size: 12px; font-weight: 700; margin-top: 5px; }
+    .hist-inside { color: var(--green); }
+    .hist-outside { color: var(--red); }
+
+    /* ── MAP ── */
+    .map-wrap { flex: 1; position: relative; min-width: 0; }
+    #map { width: 100%; height: 100%; }
+    .map-hint {
+      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+      background: rgba(255,255,255,.92); backdrop-filter: blur(4px);
+      border: 1px solid var(--line); border-radius: 999px;
+      font-size: 12px; font-weight: 600; color: var(--muted);
+      padding: 6px 14px; pointer-events: none; white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08); z-index: 10;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 860px) {
+      .app-body { flex-direction: column; overflow: auto; }
+      .panel { width: 100%; border-right: none; border-bottom: 1px solid var(--line); max-height: 420px; }
+      .map-wrap { min-height: 400px; }
+    }
+    @media (max-width: 600px) {
+      .nav { padding: 0 12px; }
+      .nav-user { display: none; }
+      .nav-divider { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <div class="topbar">
-    <div class="topbar-left">
-      <a class="logo" href="/dashboard">RightG</a>
-      <span class="breadcrumb">/ <a href="/dashboard">Projects</a> / <span id="projectTitleBreadcrumb" class="project-title">Loading…</span></span>
+  <!-- TOP NAV -->
+  <nav class="nav">
+    <a class="nav-back" href="/dashboard">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      All Projects
+    </a>
+    <div class="nav-divider"></div>
+    <span id="navProjectName" class="nav-project">Loading…</span>
+    <div class="nav-right">
+      <a id="manageBtn" class="nav-pill" href="#">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Manage Polygons
+      </a>
+      <span id="navUser" class="nav-user"></span>
+      <button class="nav-pill" onclick="logout()">Log out</button>
     </div>
-    <div class="top-actions">
-      <div id="userChip" class="chip">Loading…</div>
-      <a id="manageLink" class="topbtn" href="#">⚙️ Manage polygons</a>
-      <button class="topbtn" onclick="logout()">Log out</button>
-    </div>
-  </div>
+  </nav>
 
-  <div class="shell">
-    <div class="layout">
-      <div class="card">
-        <span class="eyebrow">Coverage lookup</span>
-        <h2 id="projectTitle">Address Checker</h2>
-        <div class="subtext" id="projectSubtext">Enter an address to check if it falls inside your saved polygons.</div>
+  <!-- APP BODY -->
+  <div class="app-body">
 
-        <label for="addressInput">Address</label>
-        <input id="addressInput" type="text" placeholder="123 Main St, Irvine, CA" />
-        <div class="btn-row">
-          <button class="btn-primary" onclick="checkAddress()">Check address</button>
-          <button class="btn-secondary" onclick="fitPolygons()">Zoom to coverage</button>
-        </div>
-        <div id="result" class="status neutral">Enter an address and click Check address.</div>
-        <div id="resultMeta" class="meta"></div>
-
-        <div class="stats">
-          <div class="stat"><div id="polygonCount" class="num">—</div><div class="lbl">Polygons</div></div>
-          <div class="stat"><div id="loadedStatus" class="num">Ready</div><div class="lbl">System status</div></div>
-        </div>
-
-        <div class="history">
-          <h3>Recent checks</h3>
-          <div id="historyList" class="subtext">No checks yet.</div>
-        </div>
+    <!-- LEFT PANEL -->
+    <div class="panel">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('check')">Check Address</div>
+        <div class="tab" onclick="switchTab('history')">History</div>
       </div>
 
-      <div class="card"><div id="map"></div></div>
+      <!-- CHECK TAB -->
+      <div id="tab-check" class="tab-pane active">
+        <div>
+          <div class="field-label">Enter an address</div>
+          <input id="addrInput" class="addr-input" type="text" placeholder="123 Main St, Irvine, CA"
+            onkeydown="if(event.key==='Enter') checkAddr()" />
+        </div>
+        <button class="btn-check" id="checkBtn" onclick="checkAddr()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Check Address
+        </button>
+
+        <div id="resultBox" class="result-box">
+          Type an address above and press Check.
+        </div>
+        <div id="resultDetail" class="result-detail" style="display:none"></div>
+
+        <div class="stats">
+          <div class="stat"><div id="statPoly" class="stat-num">—</div><div class="stat-lbl">Polygons</div></div>
+          <div class="stat"><div id="statStatus" class="stat-num">Ready</div><div class="stat-lbl">Status</div></div>
+        </div>
+
+        <button class="btn-zoom" onclick="fitPolygons()">
+          🗺 Zoom to coverage area
+        </button>
+      </div>
+
+      <!-- HISTORY TAB -->
+      <div id="tab-history" class="tab-pane">
+        <div class="field-label">Recent checks</div>
+        <div id="histList"><div class="hist-empty">No checks yet.</div></div>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div class="map-wrap">
+      <div id="map"></div>
+      <div class="map-hint" id="mapHint">Coverage zones shown in blue</div>
     </div>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Read project ID from URL
-    const params = new URLSearchParams(window.location.search);
+    /* ── Init ── */
+    const params = new URLSearchParams(location.search);
     const projectId = params.get('project');
+    if (!projectId) location.href = '/dashboard';
 
-    if (!projectId) {
-      window.location.href = '/dashboard';
-    }
+    document.getElementById('manageBtn').href = `/manage?project=${projectId}`;
 
-    // Set manage link
-    document.getElementById('manageLink').href = `/manage?project=${projectId}`;
-
-    const map = L.map('map').setView([33.6846, -117.8265], 11);
+    /* ── Map ── */
+    const map = L.map('map').setView([33.6846, -117.8265], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
+      maxZoom: 19, attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    let polygonsLayer = L.geoJSON(null, {
-      style: { color: '#2563eb', weight: 2, fillColor: '#60a5fa', fillOpacity: 0.25 },
-      onEachFeature: (feature, layer) => {
-        const name = feature?.properties?.name || 'Unnamed polygon';
-        layer.bindPopup(name);
-      }
+    const polyLayer = L.geoJSON(null, {
+      style: { color: '#2563eb', weight: 2, fillColor: '#93c5fd', fillOpacity: 0.22 },
+      onEachFeature: (f, layer) => layer.bindPopup(f?.properties?.name || 'Unnamed')
     }).addTo(map);
-    let markerLayer = L.layerGroup().addTo(map);
+    const markerLayer = L.layerGroup().addTo(map);
 
-    async function requireAuth() {
-      const res = await fetch('/api/me');
-      if (res.status === 401) { window.location.href = '/login'; throw new Error(); }
-      const user = await res.json();
-      document.getElementById('userChip').innerText = `${user.full_name} · ${user.email}`;
-      return user;
+    function fitPolygons() {
+      if (polyLayer.getLayers().length) map.fitBounds(polyLayer.getBounds(), { padding: [30, 30] });
     }
 
-    async function loadProject() {
-      const res = await fetch('/api/projects');
-      if (res.status === 401) { window.location.href = '/login'; return; }
-      const projects = await res.json();
-      const project = projects.find(p => String(p.id) === String(projectId));
-      if (!project) {
-        alert('Project not found.');
-        window.location.href = '/dashboard';
-        return;
-      }
-      document.title = `${project.name} — RightG`;
-      document.getElementById('projectTitle').innerText = project.name;
-      document.getElementById('projectTitleBreadcrumb').innerText = project.name;
-      if (project.description) {
-        document.getElementById('projectSubtext').innerText = project.description;
-      }
+    /* ── Tabs ── */
+    function switchTab(t) {
+      document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', ['check','history'][i] === t));
+      document.querySelectorAll('.tab-pane').forEach((el) => el.classList.remove('active'));
+      document.getElementById(`tab-${t}`).classList.add('active');
+      if (t === 'history') loadHistory();
+    }
+
+    /* ── Helpers ── */
+    function esc(v) {
+      return String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+        .replaceAll('"','&quot;').replaceAll("'",'&#39;');
+    }
+    function fmt(v) {
+      const d = new Date(v); return isNaN(d) ? v : d.toLocaleString();
+    }
+
+    /* ── Auth + Project ── */
+    async function boot() {
+      const r = await fetch('/api/me');
+      if (r.status === 401) { location.href = '/login'; return; }
+      const u = await r.json();
+      document.getElementById('navUser').innerText = u.full_name;
+
+      const pr = await fetch('/api/projects');
+      const projects = await pr.json();
+      const proj = projects.find(p => String(p.id) === String(projectId));
+      if (!proj) { alert('Project not found.'); location.href = '/dashboard'; return; }
+
+      document.title = `${proj.name} — RightG`;
+      document.getElementById('navProjectName').innerText = proj.name;
+
+      await loadPolygons();
+      await loadHistory();
     }
 
     async function loadPolygons() {
-      const res = await fetch(`/api/projects/${projectId}/polygons`);
-      if (res.status === 401) { window.location.href = '/login'; return; }
-      if (!res.ok) return;
-      const data = await res.json();
-      polygonsLayer.clearLayers();
-      polygonsLayer.addData(data);
-      const count = (data.features || []).length;
-      document.getElementById('polygonCount').innerText = count;
-      document.getElementById('loadedStatus').innerText = count ? 'Loaded' : 'Empty';
-      if (count) fitPolygons();
+      const r = await fetch(`/api/projects/${projectId}/polygons`);
+      if (!r.ok) return;
+      const data = await r.json();
+      polyLayer.clearLayers();
+      polyLayer.addData(data);
+      const n = (data.features || []).length;
+      document.getElementById('statPoly').innerText = n;
+      document.getElementById('statStatus').innerText = n ? 'Loaded' : 'Empty';
+      if (n) { fitPolygons(); document.getElementById('mapHint').innerText = `${n} coverage zone${n>1?'s':''} loaded`; }
+      else document.getElementById('mapHint').innerText = 'No polygons yet — add some via Manage Polygons';
     }
 
     async function loadHistory() {
-      const res = await fetch(`/api/projects/${projectId}/my-checks`);
-      if (res.status === 401) { window.location.href = '/login'; return; }
-      if (!res.ok) return;
-      const rows = await res.json();
-      const el = document.getElementById('historyList');
-      if (!rows.length) {
-        el.innerHTML = '<div class="subtext">No checks yet.</div>';
-        return;
-      }
+      const r = await fetch(`/api/projects/${projectId}/my-checks`);
+      if (!r.ok) return;
+      const rows = await r.json();
+      const el = document.getElementById('histList');
+      if (!rows.length) { el.innerHTML = '<div class="hist-empty">No checks yet for this project.</div>'; return; }
       el.innerHTML = rows.map(row => `
-        <div class="history-item">
-          <div class="history-top">
-            <div>
-              <div class="history-address">${escapeHtml(row.input_address)}</div>
-              <div class="history-match ${row.matched ? 'match-yes' : 'match-no'}">
-                ${row.matched ? '✓ Inside' : '✗ Outside'}
-                ${row.matched_polygon_names.length ? ' · ' + row.matched_polygon_names.map(escapeHtml).join(', ') : ''}
-              </div>
-            </div>
-            <div class="history-time">${formatDate(row.created_at)}</div>
+        <div class="hist-item">
+          <div class="hist-row">
+            <div class="hist-addr">${esc(row.input_address)}</div>
+            <div class="hist-time">${fmt(row.created_at)}</div>
           </div>
-        </div>
-      `).join('');
+          <div class="hist-status ${row.matched ? 'hist-inside' : 'hist-outside'}">
+            ${row.matched ? '✓ Inside' : '✗ Outside'}
+            ${row.matched_polygon_names.length ? ' · ' + row.matched_polygon_names.map(esc).join(', ') : ''}
+          </div>
+        </div>`).join('');
     }
 
-    async function checkAddress() {
-      const address = document.getElementById('addressInput').value.trim();
-      if (!address) { alert('Enter an address first.'); return; }
+    /* ── Check address ── */
+    async function checkAddr() {
+      const address = document.getElementById('addrInput').value.trim();
+      if (!address) { document.getElementById('addrInput').focus(); return; }
 
-      const resultEl = document.getElementById('result');
-      const metaEl = document.getElementById('resultMeta');
-      resultEl.className = 'status neutral';
-      resultEl.innerText = 'Checking…';
-      metaEl.innerHTML = '';
+      const btn = document.getElementById('checkBtn');
+      const rb = document.getElementById('resultBox');
+      const rd = document.getElementById('resultDetail');
+      btn.disabled = true;
+      rb.className = 'result-box loading'; rb.innerText = 'Checking address…';
+      rd.style.display = 'none';
 
-      const res = await fetch(`/api/projects/${projectId}/check-address`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address }),
+      const r = await fetch(`/api/projects/${projectId}/check-address`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ address })
       });
-      if (res.status === 401) { window.location.href = '/login'; return; }
-      const data = await res.json();
+      btn.disabled = false;
+      if (r.status === 401) { location.href = '/login'; return; }
+      const data = await r.json();
+
       markerLayer.clearLayers();
 
-      if (!res.ok) {
-        resultEl.className = 'status error';
-        resultEl.innerText = data.detail || 'Check failed.';
-        return;
+      if (!r.ok) {
+        rb.className = 'result-box outside'; rb.innerText = data.detail || 'Error checking address.'; return;
       }
 
       const marker = L.marker([data.geocode.lat, data.geocode.lng]).addTo(markerLayer);
@@ -246,51 +340,29 @@
       map.panTo([data.geocode.lat, data.geocode.lng]);
 
       if (data.matched) {
-        resultEl.className = 'status success';
-        resultEl.innerText = '✓ Inside — this address is inside at least one polygon.';
+        rb.className = 'result-box inside';
+        rb.innerHTML = `<svg style="display:inline;vertical-align:-2px;margin-right:5px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Inside — this address is within your coverage area.`;
       } else {
-        resultEl.className = 'status error';
-        resultEl.innerText = '✗ Outside — this address is not inside any polygon.';
+        rb.className = 'result-box outside';
+        rb.innerHTML = `<svg style="display:inline;vertical-align:-2px;margin-right:5px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Outside — not inside any saved polygon.`;
       }
 
-      const names = (data.matched_polygon_names || []).map(n => `<span class="pill">${escapeHtml(n)}</span>`).join('');
-      metaEl.innerHTML = `
-        <div><strong>Normalized:</strong> ${escapeHtml(data.normalized_address || data.address)}</div>
-        <div><strong>Coordinates:</strong> ${data.geocode.lat.toFixed(6)}, ${data.geocode.lng.toFixed(6)}</div>
-        <div><strong>Polygons checked:</strong> ${data.total_polygons_checked}</div>
+      const names = (data.matched_polygon_names || []).map(n => `<span class="pill">${esc(n)}</span>`).join('');
+      rd.style.display = 'block';
+      rd.innerHTML = `
         <div><strong>Matched:</strong> ${names || 'None'}</div>
-      `;
-      loadHistory();
-    }
+        <div><strong>Address:</strong> ${esc(data.normalized_address || data.address)}</div>
+        <div><strong>Coords:</strong> ${data.geocode.lat.toFixed(5)}, ${data.geocode.lng.toFixed(5)}</div>
+        <div><strong>Polygons checked:</strong> ${data.total_polygons_checked}</div>`;
 
-    function fitPolygons() {
-      if (polygonsLayer.getLayers().length) {
-        map.fitBounds(polygonsLayer.getBounds(), { padding: [20, 20] });
-      }
+      loadHistory();
     }
 
     async function logout() {
       await fetch('/api/logout', { method: 'POST' });
-      window.location.href = '/';
+      location.href = '/';
     }
 
-    function formatDate(value) {
-      const d = new Date(value);
-      return isNaN(d.getTime()) ? value : d.toLocaleString();
-    }
-
-    function escapeHtml(value) {
-      return String(value)
-        .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
-        .replaceAll('"','&quot;').replaceAll("'",'&#39;');
-    }
-
-    async function boot() {
-      await requireAuth();
-      await loadProject();
-      await loadPolygons();
-      await loadHistory();
-    }
     boot();
   </script>
 </body>

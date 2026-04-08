@@ -6,222 +6,269 @@
   <title>Manage Polygons — RightG</title>
   <style>
     :root {
-      --bg: #f4f7fb; --card: #ffffff; --text: #122033; --muted: #64748b; --line: #dbe3ef;
-      --primary: #1d4ed8; --primary2: #2563eb; --danger: #ef4444;
-      --success-bg: #dcfce7; --success-tx: #166534;
-      --error-bg: #fee2e2; --error-tx: #991b1b;
+      --primary: #2563eb; --primary-dk: #1d4ed8; --primary-lt: #eff6ff;
+      --text: #0f172a; --muted: #64748b; --muted2: #94a3b8;
+      --bg: #f8fafc; --card: #ffffff; --line: #e2e8f0;
+      --red: #ef4444; --red-lt: #fef2f2; --red-ring: #fecaca;
+      --green: #16a34a; --green-lt: #f0fdf4; --green-ring: #bbf7d0;
+      --nav-h: 60px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Inter, Arial, sans-serif; background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%); color: var(--text); min-height: 100vh; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Inter", Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* TOP BAR */
-    .topbar {
-      display: flex; justify-content: space-between; align-items: center; gap: 16px;
-      padding: 14px 28px; background: #fff; border-bottom: 1px solid var(--line); flex-wrap: wrap;
+    /* ── NAV ── */
+    .nav {
+      height: var(--nav-h); background: #fff; border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; padding: 0 20px; gap: 0;
+      position: sticky; top: 0; z-index: 100;
     }
-    .topbar-left { display: flex; align-items: center; gap: 14px; }
-    .logo { font-size: 20px; font-weight: 900; color: var(--primary); text-decoration: none; }
-    .breadcrumb { color: var(--muted); font-size: 14px; }
-    .breadcrumb a { color: var(--primary); text-decoration: none; font-weight: 700; }
-    .project-title { font-weight: 800; font-size: 15px; }
-    .top-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .chip { background: #f1f5f9; color: var(--text); padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 13px; }
-    .topbtn { text-decoration: none; background: #fff; color: var(--text); border: 1px solid var(--line); padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
-    .topbtn:hover { background: #f8fafc; }
-
-    /* MAIN */
-    .shell { max-width: 900px; margin: 0 auto; padding: 32px 20px 60px; }
-    .card { background: var(--card); border: 1px solid rgba(219,227,239,.9); border-radius: 22px; box-shadow: 0 16px 40px rgba(15,23,42,.06); padding: 28px; }
-    .eyebrow { display: inline-block; padding: 6px 12px; border-radius: 999px; background: #eff6ff; color: var(--primary); font-weight: 800; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; }
-    h2 { margin: 12px 0 8px; font-size: 26px; }
-    .subtext { color: var(--muted); line-height: 1.6; margin-bottom: 20px; font-size: 15px; }
-    label { display: block; font-weight: 800; margin: 16px 0 8px; font-size: 14px; }
-    input[type=file] { width: 100%; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: #fff; font-family: inherit; font-size: 14px; }
-
-    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
-    button { border: none; border-radius: 14px; padding: 12px 18px; font-weight: 800; cursor: pointer; font-size: 15px; font-family: inherit; }
-    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary2)); color: #fff; }
-    .btn-primary:hover { opacity: .92; }
-    .btn-secondary { background: #eef2f7; color: var(--text); }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .btn-danger:hover { opacity: .9; }
-
-    .status-msg {
-      margin-top: 18px; padding: 14px 16px; border-radius: 16px;
-      font-weight: 700; font-size: 14px; line-height: 1.5;
-      background: var(--success-bg); color: var(--success-tx);
+    .nav-back {
+      display: flex; align-items: center; gap: 6px; text-decoration: none;
+      color: var(--muted); font-size: 13px; font-weight: 600; padding: 6px 12px;
+      border-radius: 8px; border: 1px solid var(--line); margin-right: 14px; white-space: nowrap;
     }
-    .status-msg.err { background: var(--error-bg); color: var(--error-tx); }
-
-    .list { margin-top: 28px; }
-    .list h2 { margin-bottom: 16px; }
-    .item {
-      display: flex; justify-content: space-between; align-items: center; gap: 16px;
-      padding: 16px 20px; border: 1px solid var(--line); border-radius: 18px;
-      margin-bottom: 12px; background: #fff;
+    .nav-back:hover { background: var(--bg); color: var(--text); }
+    .nav-divider { width: 1px; height: 22px; background: var(--line); margin: 0 14px; flex-shrink: 0; }
+    .nav-title { font-size: 15px; font-weight: 800; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: 14px; }
+    .nav-pill {
+      display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600;
+      padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line);
+      text-decoration: none; color: var(--text); background: #fff; cursor: pointer; white-space: nowrap;
     }
-    .item-name { font-size: 17px; font-weight: 900; }
-    .item-meta { color: var(--muted); font-size: 13px; margin-top: 4px; }
-    .btn-del-sm { background: #fee2e2; color: var(--danger); border: none; border-radius: 10px; padding: 9px 14px; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; }
-    .btn-del-sm:hover { background: #fecaca; }
+    .nav-pill:hover { background: var(--bg); }
+    .nav-pill.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .nav-pill.primary:hover { background: var(--primary-dk); }
+    .nav-user { font-size: 13px; font-weight: 600; color: var(--muted); padding: 0 4px; }
 
-    .empty-list { color: var(--muted); padding: 20px 0; font-size: 15px; }
+    /* ── PAGE ── */
+    .page { max-width: 760px; margin: 0 auto; padding: 36px 20px 80px; }
+    .section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+
+    /* ── UPLOAD SECTION ── */
+    .section-title { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+    .section-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+
+    .drop-zone {
+      border: 2px dashed var(--line); border-radius: 12px; padding: 32px 20px;
+      text-align: center; cursor: pointer; transition: border-color .15s, background .15s;
+      background: var(--bg);
+    }
+    .drop-zone:hover, .drop-zone.over { border-color: var(--primary); background: var(--primary-lt); }
+    .drop-zone input { display: none; }
+    .drop-icon { font-size: 32px; margin-bottom: 10px; }
+    .drop-text { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .drop-sub { font-size: 12px; color: var(--muted); }
+    .drop-file-name { font-size: 13px; font-weight: 600; color: var(--primary); margin-top: 10px; }
+
+    .upload-actions { display: flex; gap: 10px; margin-top: 16px; }
+    .btn-primary { flex: 1; background: var(--primary); color: #fff; font-size: 14px; font-weight: 700; padding: 11px 18px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
+    .btn-primary:hover { background: var(--primary-dk); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* status */
+    .status-bar {
+      display: none; margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; line-height: 1.5;
+      background: var(--green-lt); color: var(--green); border: 1px solid var(--green-ring);
+    }
+    .status-bar.err { background: var(--red-lt); color: var(--red); border-color: var(--red-ring); }
+
+    /* ── POLYGON LIST ── */
+    .list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .list-header h2 { font-size: 16px; font-weight: 800; }
+    .btn-danger { background: var(--red-lt); color: var(--red); font-size: 13px; font-weight: 700; padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer; }
+    .btn-danger:hover { background: var(--red-ring); }
+
+    .poly-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; background: #fff;
+    }
+    .poly-item:last-child { margin-bottom: 0; }
+    .poly-icon { font-size: 20px; flex-shrink: 0; }
+    .poly-info { flex: 1; min-width: 0; }
+    .poly-name { font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .poly-meta { font-size: 12px; color: var(--muted2); margin-top: 3px; }
+    .btn-del { background: var(--red-lt); color: var(--red); font-size: 12px; font-weight: 700; padding: 7px 12px; border-radius: 8px; border: none; cursor: pointer; flex-shrink: 0; }
+    .btn-del:hover { background: var(--red-ring); }
+
+    .empty-list { text-align: center; padding: 32px 20px; color: var(--muted); font-size: 14px; }
+    .empty-list p { margin-top: 8px; font-size: 13px; }
 
     @media (max-width: 600px) {
-      .topbar { padding: 12px 16px; }
-      .item { flex-direction: column; align-items: flex-start; }
+      .nav { padding: 0 12px; }
+      .nav-user { display: none; }
+      .page { padding: 20px 14px 60px; }
     }
   </style>
 </head>
 <body>
 
-  <div class="topbar">
-    <div class="topbar-left">
-      <a class="logo" href="/dashboard">RightG</a>
-      <span class="breadcrumb">/ <a href="/dashboard">Projects</a> / <span id="projectTitleBreadcrumb" class="project-title">Loading…</span> / Manage</span>
+  <!-- NAV -->
+  <nav class="nav">
+    <a id="backToChecker" class="nav-back" href="#">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to Checker
+    </a>
+    <div class="nav-divider"></div>
+    <span id="navTitle" class="nav-title">Manage Polygons</span>
+    <div class="nav-right">
+      <span id="navUser" class="nav-user"></span>
+      <button class="nav-pill" onclick="logout()">Log out</button>
     </div>
-    <div class="top-actions">
-      <div id="userChip" class="chip">Loading…</div>
-      <a id="checkerLink" class="topbtn" href="#">← Back to checker</a>
-      <button class="topbtn" onclick="logout()">Log out</button>
-    </div>
-  </div>
+  </nav>
 
-  <div class="shell">
-    <div class="card">
-      <span class="eyebrow">Polygon management</span>
-      <h2 id="projectTitle">Manage Polygons</h2>
-      <div class="subtext">Upload GeoJSON or KML files to add coverage zones to this project. You can upload multiple files — new polygons are added to the existing list.</div>
+  <div class="page">
 
-      <label for="fileInput">GeoJSON or KML file</label>
-      <input id="fileInput" type="file" accept=".geojson,.json,.kml" />
+    <!-- Upload section -->
+    <div class="section">
+      <div class="section-title">Add polygons</div>
+      <div class="section-desc">Upload a GeoJSON or KML file to add coverage zones to this project. Multiple uploads are supported — new polygons are added to the existing list.</div>
 
-      <div class="btn-row">
-        <button class="btn-primary" onclick="uploadPolygons()">Add polygons</button>
-        <button class="btn-secondary" onclick="refreshList()">Refresh list</button>
-        <button class="btn-danger" onclick="deleteAll()">Delete all polygons</button>
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()"
+        ondragover="onDrag(event,true)" ondragleave="onDrag(event,false)" ondrop="onDrop(event)">
+        <input type="file" id="fileInput" accept=".geojson,.json,.kml" onchange="onFileSelect()" />
+        <div class="drop-icon">📂</div>
+        <div class="drop-text">Click to choose a file, or drag & drop here</div>
+        <div class="drop-sub">Supported: .geojson, .json, .kml</div>
+        <div id="fileName" class="drop-file-name"></div>
       </div>
 
-      <div id="statusMsg" class="status-msg" style="display:none"></div>
-
-      <div class="list">
-        <h2>Saved polygons</h2>
-        <div id="polygonList"><div class="empty-list">Loading…</div></div>
+      <div class="upload-actions">
+        <button class="btn-primary" id="uploadBtn" onclick="uploadPolygons()" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          Upload Polygons
+        </button>
       </div>
+      <div id="statusBar" class="status-bar"></div>
     </div>
+
+    <!-- Polygon list -->
+    <div class="section">
+      <div class="list-header">
+        <h2 id="listTitle">Saved Polygons</h2>
+        <button class="btn-danger" onclick="deleteAll()">Delete all</button>
+      </div>
+      <div id="polyList"><div class="empty-list">Loading…</div></div>
+    </div>
+
   </div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     const projectId = params.get('project');
+    if (!projectId) location.href = '/dashboard';
 
-    if (!projectId) {
-      window.location.href = '/dashboard';
-    }
+    document.getElementById('backToChecker').href = `/checker?project=${projectId}`;
 
-    document.getElementById('checkerLink').href = `/checker?project=${projectId}`;
-
-    function escapeHtml(v) {
-      return String(v)
-        .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+    function esc(v) {
+      return String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
         .replaceAll('"','&quot;').replaceAll("'",'&#39;');
     }
 
-    function setStatus(msg, isError = false) {
-      const el = document.getElementById('statusMsg');
+    function setStatus(msg, isErr = false) {
+      const el = document.getElementById('statusBar');
       el.innerText = msg;
-      el.className = 'status-msg' + (isError ? ' err' : '');
+      el.className = 'status-bar' + (isErr ? ' err' : '');
       el.style.display = 'block';
+      if (!isErr) setTimeout(() => el.style.display = 'none', 4000);
     }
 
-    async function requireAuth() {
-      const res = await fetch('/api/me');
-      if (res.status === 401) { window.location.href = '/login'; throw new Error(); }
-      const user = await res.json();
-      document.getElementById('userChip').innerText = `${user.full_name} · ${user.email}`;
+    /* ── Drag/drop ── */
+    function onDrag(e, over) { e.preventDefault(); document.getElementById('dropZone').classList.toggle('over', over); }
+    function onDrop(e) {
+      e.preventDefault(); onDrag(e, false);
+      const f = e.dataTransfer.files[0];
+      if (f) { document.getElementById('fileInput').files = e.dataTransfer.files; onFileSelect(); }
+    }
+    function onFileSelect() {
+      const f = document.getElementById('fileInput').files[0];
+      document.getElementById('fileName').innerText = f ? `Selected: ${f.name}` : '';
+      document.getElementById('uploadBtn').disabled = !f;
     }
 
-    async function loadProject() {
-      const res = await fetch('/api/projects');
-      if (res.status === 401) { window.location.href = '/login'; return; }
-      const projects = await res.json();
-      const project = projects.find(p => String(p.id) === String(projectId));
-      if (!project) {
-        alert('Project not found.');
-        window.location.href = '/dashboard';
-        return;
-      }
-      document.title = `Manage — ${project.name} — RightG`;
-      document.getElementById('projectTitle').innerText = `Manage: ${project.name}`;
-      document.getElementById('projectTitleBreadcrumb').innerText = project.name;
+    /* ── Boot ── */
+    async function boot() {
+      const r = await fetch('/api/me');
+      if (r.status === 401) { location.href = '/login'; return; }
+      const u = await r.json();
+      document.getElementById('navUser').innerText = u.full_name;
+
+      const pr = await fetch('/api/projects');
+      const projects = await pr.json();
+      const proj = projects.find(p => String(p.id) === String(projectId));
+      if (!proj) { alert('Project not found.'); location.href = '/dashboard'; return; }
+
+      document.title = `Manage — ${proj.name} — RightG`;
+      document.getElementById('navTitle').innerText = `${proj.name} — Polygons`;
+      await refreshList();
     }
 
-    async function refreshList() {
-      const res = await fetch(`/api/projects/${projectId}/polygon-list`);
-      if (res.status === 401) { window.location.href = '/login'; return; }
-      const items = await res.json();
-      const container = document.getElementById('polygonList');
-      if (!items.length) {
-        container.innerHTML = '<div class="empty-list">No polygons saved yet. Upload a GeoJSON or KML file above.</div>';
-        return;
-      }
-      container.innerHTML = items.map(item => `
-        <div class="item">
-          <div>
-            <div class="item-name">${escapeHtml(item.name)}</div>
-            <div class="item-meta">${escapeHtml(item.geometry_type)}${item.source_file ? ' · from ' + escapeHtml(item.source_file) : ''}</div>
-          </div>
-          <button class="btn-del-sm" onclick="deletePolygon('${escapeHtml(item.id)}')">Delete</button>
-        </div>
-      `).join('');
-      setStatus(`${items.length} polygon${items.length === 1 ? '' : 's'} saved.`);
-    }
-
+    /* ── Upload ── */
     async function uploadPolygons() {
       const input = document.getElementById('fileInput');
-      if (!input.files.length) { alert('Choose a file first.'); return; }
+      if (!input.files.length) return;
+      const btn = document.getElementById('uploadBtn');
+      btn.disabled = true; btn.innerText = 'Uploading…';
+
       const form = new FormData();
       form.append('file', input.files[0]);
-      const res = await fetch(`/api/projects/${projectId}/polygons/upload`, { method: 'POST', body: form });
-      if (res.status === 401) { window.location.href = '/login'; return; }
-      const data = await res.json();
-      if (!res.ok) {
-        setStatus(data.detail || 'Upload failed.', true);
-        return;
-      }
-      setStatus(`${data.message} Total: ${data.total_polygon_count}`);
-      input.value = '';
+      const r = await fetch(`/api/projects/${projectId}/polygons/upload`, { method: 'POST', body: form });
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>Upload Polygons`;
+
+      if (r.status === 401) { location.href = '/login'; return; }
+      const data = await r.json();
+      if (!r.ok) { setStatus(data.detail || 'Upload failed.', true); return; }
+      setStatus(`✓ ${data.added_count} polygon${data.added_count>1?'s':''} added. Total: ${data.total_polygon_count}`);
+      input.value = ''; document.getElementById('fileName').innerText = ''; btn.disabled = true;
       refreshList();
     }
 
-    async function deletePolygon(id) {
-      if (!confirm('Delete this polygon?')) return;
-      const res = await fetch(`/api/projects/${projectId}/polygons/${id}`, { method: 'DELETE' });
-      if (res.status === 401) { window.location.href = '/login'; return; }
-      const data = await res.json();
-      setStatus(data.message || 'Polygon deleted.');
-      refreshList();
+    /* ── List ── */
+    async function refreshList() {
+      const r = await fetch(`/api/projects/${projectId}/polygon-list`);
+      if (!r.ok) return;
+      const items = await r.json();
+      const el = document.getElementById('polyList');
+      document.getElementById('listTitle').innerText = `Saved Polygons (${items.length})`;
+
+      if (!items.length) {
+        el.innerHTML = `<div class="empty-list">
+          <div style="font-size:36px">🗺️</div>
+          <div>No polygons yet.</div>
+          <p>Upload a GeoJSON or KML file above to add coverage zones.</p>
+        </div>`; return;
+      }
+      el.innerHTML = items.map(item => `
+        <div class="poly-item">
+          <div class="poly-icon">${item.geometry_type === 'MultiPolygon' ? '🗺️' : '📍'}</div>
+          <div class="poly-info">
+            <div class="poly-name">${esc(item.name)}</div>
+            <div class="poly-meta">${esc(item.geometry_type)}${item.source_file ? ' · from ' + esc(item.source_file) : ''}</div>
+          </div>
+          <button class="btn-del" onclick="deleteOne('${esc(item.id)}', '${esc(item.name)}')">Delete</button>
+        </div>`).join('');
+    }
+
+    async function deleteOne(id, name) {
+      if (!confirm(`Delete "${name}"?`)) return;
+      const r = await fetch(`/api/projects/${projectId}/polygons/${id}`, { method: 'DELETE' });
+      if (r.status === 401) { location.href = '/login'; return; }
+      const d = await r.json(); setStatus(d.message || 'Deleted.'); refreshList();
     }
 
     async function deleteAll() {
-      if (!confirm('Delete ALL polygons in this project?')) return;
-      const res = await fetch(`/api/projects/${projectId}/polygons`, { method: 'DELETE' });
-      if (res.status === 401) { window.location.href = '/login'; return; }
-      const data = await res.json();
-      setStatus(data.message || 'All polygons deleted.');
-      refreshList();
+      if (!confirm('Delete ALL polygons in this project? This cannot be undone.')) return;
+      const r = await fetch(`/api/projects/${projectId}/polygons`, { method: 'DELETE' });
+      if (r.status === 401) { location.href = '/login'; return; }
+      setStatus('All polygons deleted.'); refreshList();
     }
 
     async function logout() {
       await fetch('/api/logout', { method: 'POST' });
-      window.location.href = '/';
+      location.href = '/';
     }
 
-    async function boot() {
-      await requireAuth();
-      await loadProject();
-      await refreshList();
-    }
     boot();
   </script>
 </body>
