@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RightG — Address Coverage Checker</title>
+  <style>
+    :root {
+      --primary: #1d4ed8; --primary2: #2563eb; --text: #0f172a; --muted: #64748b;
+      --bg: #f8fbff; --card: #ffffff; --line: #dbe3ef;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Inter, Arial, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* NAV */
+    nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 18px 40px; background: #fff; border-bottom: 1px solid var(--line);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .logo { font-size: 22px; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; }
+    .nav-links { display: flex; gap: 12px; align-items: center; }
+    .btn-ghost { text-decoration: none; color: var(--text); font-weight: 700; padding: 10px 18px; border-radius: 10px; }
+    .btn-ghost:hover { background: #f1f5f9; }
+    .btn-nav { text-decoration: none; background: var(--primary); color: #fff; font-weight: 700;
+               padding: 10px 22px; border-radius: 10px; }
+    .btn-nav:hover { background: var(--primary2); }
+
+    /* HERO */
+    .hero {
+      text-align: center; padding: 96px 20px 80px;
+      background: linear-gradient(160deg, #eff6ff 0%, #f8fbff 60%);
+    }
+    .hero-badge {
+      display: inline-block; background: #dbeafe; color: var(--primary);
+      font-weight: 800; font-size: 13px; padding: 6px 14px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: .05em; margin-bottom: 24px;
+    }
+    .hero h1 { font-size: clamp(34px, 6vw, 58px); font-weight: 900; line-height: 1.1; margin-bottom: 20px; }
+    .hero h1 span { color: var(--primary); }
+    .hero p { font-size: 20px; color: var(--muted); max-width: 560px; margin: 0 auto 36px; line-height: 1.6; }
+    .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-cta {
+      text-decoration: none; background: linear-gradient(135deg, var(--primary), var(--primary2));
+      color: #fff; font-weight: 800; font-size: 18px; padding: 16px 36px; border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(37,99,235,.3);
+    }
+    .btn-cta:hover { opacity: .92; }
+    .btn-outline {
+      text-decoration: none; color: var(--primary); font-weight: 800; font-size: 18px;
+      padding: 16px 36px; border-radius: 14px; border: 2px solid #bfdbfe;
+      background: #fff;
+    }
+    .btn-outline:hover { border-color: var(--primary); }
+
+    /* HOW IT WORKS */
+    .section { padding: 80px 20px; text-align: center; }
+    .section-label { display: inline-block; background: #eff6ff; color: var(--primary);
+                     font-weight: 800; font-size: 12px; padding: 6px 12px; border-radius: 999px;
+                     text-transform: uppercase; letter-spacing: .05em; margin-bottom: 16px; }
+    .section h2 { font-size: 36px; font-weight: 900; margin-bottom: 10px; }
+    .section .lead { color: var(--muted); font-size: 18px; max-width: 480px; margin: 0 auto 56px; line-height: 1.6; }
+
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; max-width: 900px; margin: 0 auto; }
+    .step { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 32px 24px; text-align: left; }
+    .step-num { width: 44px; height: 44px; border-radius: 12px; background: #eff6ff;
+                color: var(--primary); font-weight: 900; font-size: 20px;
+                display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+    .step h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+    .step p { color: var(--muted); line-height: 1.6; font-size: 15px; }
+
+    /* FEATURES */
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
+    .feature { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 28px 24px; text-align: left; }
+    .feature-icon { font-size: 32px; margin-bottom: 16px; }
+    .feature h3 { font-size: 17px; font-weight: 800; margin-bottom: 8px; }
+    .feature p { color: var(--muted); line-height: 1.6; font-size: 14px; }
+
+    /* CTA BANNER */
+    .cta-banner {
+      background: linear-gradient(135deg, var(--primary), #3b82f6);
+      color: #fff; text-align: center; padding: 72px 20px;
+    }
+    .cta-banner h2 { font-size: 36px; font-weight: 900; margin-bottom: 12px; }
+    .cta-banner p { font-size: 18px; opacity: .85; margin-bottom: 36px; }
+    .btn-cta-white {
+      text-decoration: none; background: #fff; color: var(--primary);
+      font-weight: 800; font-size: 18px; padding: 16px 36px; border-radius: 14px;
+    }
+    .btn-cta-white:hover { opacity: .92; }
+
+    /* FOOTER */
+    footer {
+      text-align: center; padding: 32px 20px; color: var(--muted);
+      font-size: 14px; border-top: 1px solid var(--line); background: #fff;
+    }
+
+    .alt-bg { background: #f1f5f9; }
+
+    @media (max-width: 600px) {
+      nav { padding: 14px 20px; }
+      .hero { padding: 64px 20px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">RightG</div>
+    <div class="nav-links">
+      <a class="btn-ghost" href="/login">Log in</a>
+      <a class="btn-nav" href="/signup">Get started free</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">Address Coverage Checker</div>
+    <h1>Know exactly <span>who's in your zone</span></h1>
+    <p>Upload your service area polygons and instantly check whether any address falls inside your coverage zones.</p>
+    <div class="hero-actions">
+      <a class="btn-cta" href="/signup">Create a free account</a>
+      <a class="btn-outline" href="/login">Log in</a>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section">
+    <div class="section-label">How it works</div>
+    <h2>Three simple steps</h2>
+    <p class="lead">Get from zero to instant address lookups in minutes.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Create a project</h3>
+        <p>Organise your work into projects — one per city, service region, or client. Create as many as you need.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Upload your polygons</h3>
+        <p>Drop in a GeoJSON or KML file that defines your coverage zones. Multiple polygons per project are supported.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Check any address</h3>
+        <p>Type an address and get an instant Inside / Outside answer, plotted on a live map with full history.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section alt-bg">
+    <div class="section-label">Features</div>
+    <h2>Everything you need</h2>
+    <p class="lead">Built for teams that need reliable, fast coverage lookups.</p>
+    <div class="features-grid">
+      <div class="feature">
+        <div class="feature-icon">🗂️</div>
+        <h3>Multiple projects</h3>
+        <p>Create separate projects for different service areas, clients, or campaigns. Each has its own polygons and check history.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🗺️</div>
+        <h3>GeoJSON & KML import</h3>
+        <p>Upload polygons drawn in Google Maps, ArcGIS, QGIS, or any other GIS tool. Both formats are supported.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <h3>Instant geocoding</h3>
+        <p>Every address is geocoded in real time and compared against your saved polygons. Results come back in seconds.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📍</div>
+        <h3>Live map view</h3>
+        <p>See your coverage zones and the checked address pinned on an interactive map — visualise your service area at a glance.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📋</div>
+        <h3>Check history</h3>
+        <p>Every address check is saved so you can review past lookups, spot patterns, and prove coverage decisions.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔒</div>
+        <h3>Secure accounts</h3>
+        <p>Email verification, password resets, and session management — your data is only visible to you.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-banner">
+    <h2>Start checking addresses today</h2>
+    <p>Free to get started. No credit card required.</p>
+    <a class="btn-cta-white" href="/signup">Create your account</a>
+  </section>
+
+  <footer>
+    &copy; 2026 RightG. All rights reserved.
+  </footer>
+
+</body>
+</html>
