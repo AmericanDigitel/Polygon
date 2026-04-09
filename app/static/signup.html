@@ -38,7 +38,7 @@
     <label for="password">Password</label>
     <input id="password" type="password" placeholder="At least 8 characters" />
 
-    <button onclick="signup()">Create account</button>
+    <button id="submitBtn" onclick="signup()">Create account</button>
     <div id="status" class="status"></div>
 
     <div class="footer">Already have an account? <a href="/login">Log in</a></div>
@@ -55,25 +55,51 @@
     }
 
     async function signup() {
+      const btn = document.getElementById('submitBtn');
       const full_name = document.getElementById('fullName').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
-      const res = await fetch('/api/signup', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ full_name, email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        showStatus('error', data.detail || 'Signup failed.');
+      if (!full_name || !email || !password) {
+        showStatus('error', 'Please fill in all fields.');
         return;
       }
-      let msg = data.message || 'Account created.';
-      if (data.preview_url) {
-        msg += `\n\nDevelopment shortcut:\n${data.preview_url}`;
+
+      btn.disabled = true;
+      btn.textContent = 'Creating account…';
+
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 30000);
+
+        const res = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ full_name, email, password }),
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+
+        const data = await res.json();
+        if (!res.ok) {
+          showStatus('error', data.detail || 'Signup failed.');
+          return;
+        }
+        let msg = data.message || 'Account created.';
+        if (data.preview_url) {
+          msg += `\n\nVerification link (email may be delayed):\n${data.preview_url}`;
+        }
+        showStatus('success', msg + '\n\nAfter verifying, go to the login page.');
+        btn.textContent = '✓ Done';
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          showStatus('error', 'Request timed out. Please try again.');
+        } else {
+          showStatus('error', 'Network error. Please check your connection and try again.');
+        }
+        btn.disabled = false;
+        btn.textContent = 'Create account';
       }
-      showStatus('success', msg + '\n\nAfter verification, go to the login page.');
     }
   </script>
 </body>
