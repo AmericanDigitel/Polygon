@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — RightG</title>
+  <style>
+    :root {
+      --primary: #2563eb; --text: #0f172a; --text2: #334155; --muted: #64748b;
+      --bg: #f8fafc; --card: #ffffff; --line: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Inter", Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+
+    .topnav {
+      background: #fff; border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; height: 58px; position: sticky; top: 0; z-index: 50;
+    }
+    .logo { font-size: 18px; font-weight: 900; color: var(--primary); text-decoration: none; }
+    .nav-links { display: flex; gap: 20px; }
+    .nav-links a { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; }
+    .nav-links a:hover { color: var(--text); }
+
+    .hero { background: #fff; border-bottom: 1px solid var(--line); padding: 48px 32px 36px; text-align: center; }
+    .hero-badge { display: inline-block; background: #eff6ff; color: var(--primary); font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 999px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 16px; }
+    .hero h1 { font-size: 32px; font-weight: 900; margin-bottom: 10px; }
+    .hero p { font-size: 15px; color: var(--muted); max-width: 500px; margin: 0 auto; }
+
+    .page { max-width: 760px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    .toc { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; margin-bottom: 36px; }
+    .toc h2 { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; }
+    .toc ol { padding-left: 18px; }
+    .toc li { margin-bottom: 6px; }
+    .toc a { font-size: 14px; color: var(--primary); text-decoration: none; font-weight: 500; }
+    .toc a:hover { text-decoration: underline; }
+
+    .effective { font-size: 13px; color: var(--muted); margin-bottom: 36px; display: flex; gap: 20px; flex-wrap: wrap; }
+
+    .section { margin-bottom: 40px; }
+    .section h2 { font-size: 20px; font-weight: 800; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); scroll-margin-top: 80px; }
+    .section h3 { font-size: 16px; font-weight: 700; margin: 20px 0 8px; color: var(--text2); }
+    .section p { font-size: 15px; color: var(--text2); margin-bottom: 12px; }
+    .section ul, .section ol { padding-left: 22px; margin-bottom: 12px; }
+    .section li { font-size: 15px; color: var(--text2); margin-bottom: 6px; }
+
+    .data-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 14px; }
+    .data-table th { text-align: left; padding: 10px 14px; background: #f8fafc; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border: 1px solid var(--line); }
+    .data-table td { padding: 10px 14px; border: 1px solid var(--line); color: var(--text2); vertical-align: top; }
+    .data-table tr:hover td { background: #fafbfc; }
+
+    .info-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+    .info-box p { color: #1e40af; font-size: 14px; margin: 0; }
+
+    footer { background: #fff; border-top: 1px solid var(--line); padding: 24px 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: 13px; color: var(--muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-size: 13px; color: var(--muted); }
+
+    @media (max-width: 600px) {
+      .topnav { padding: 0 16px; }
+      .hero { padding: 36px 16px 28px; }
+      .hero h1 { font-size: 26px; }
+      .page { padding: 32px 16px 60px; }
+      .data-table { font-size: 13px; }
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="logo" href="/">RightG</a>
+  <div class="nav-links">
+    <a href="/terms">Terms of Service</a>
+    <a href="/login">Log in</a>
+    <a href="/signup">Sign up</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">Legal</div>
+  <h1>Privacy Policy</h1>
+  <p>We care about your privacy. This policy explains exactly what data we collect, why we collect it, and how you can control it.</p>
+</div>
+
+<div class="page">
+
+  <div class="effective">
+    <span>📅 Effective date: April 8, 2026</span>
+    <span>📋 Last updated: April 8, 2026</span>
+  </div>
+
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#what-we-collect">Data We Collect</a></li>
+      <li><a href="#how-we-use">How We Use Your Data</a></li>
+      <li><a href="#third-parties">Third-Party Services</a></li>
+      <li><a href="#sharing">Data Sharing</a></li>
+      <li><a href="#retention">Data Retention</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="#your-rights">Your Rights</a></li>
+      <li><a href="#cookies">Cookies &amp; Storage</a></li>
+      <li><a href="#children">Children's Privacy</a></li>
+      <li><a href="#changes">Changes to This Policy</a></li>
+      <li><a href="#contact">Contact Us</a></li>
+    </ol>
+  </div>
+
+  <div class="section" id="overview">
+    <h2>1. Overview</h2>
+    <div class="info-box">
+      <p>💡 <strong>Short version:</strong> We collect your email and name to run your account, store the polygons and address checks you create, and send your addresses to a geocoding service to convert them to coordinates. We don't sell your data and we don't show you ads.</p>
+    </div>
+    <p>This Privacy Policy explains how RightG ("we," "us," or "our") collects, uses, stores, and shares information about you when you use the RightG address coverage service (the "Service"). It applies to all users regardless of location.</p>
+    <p>By using the Service, you agree to the collection and use of your information as described in this policy.</p>
+  </div>
+
+  <div class="section" id="what-we-collect">
+    <h2>2. Data We Collect</h2>
+
+    <h3>Information you provide directly</h3>
+    <table class="data-table">
+      <thead>
+        <tr><th>Data</th><th>When collected</th><th>Why</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Full name</strong></td><td>Account signup</td><td>To personalize your account</td></tr>
+        <tr><td><strong>Email address</strong></td><td>Account signup</td><td>Account login, email verification, password resets</td></tr>
+        <tr><td><strong>Password</strong> (hashed)</td><td>Account signup</td><td>Authentication. We store a one-way hash — we cannot read your password.</td></tr>
+        <tr><td><strong>Project names &amp; descriptions</strong></td><td>When you create projects</td><td>To organize your coverage zones</td></tr>
+        <tr><td><strong>Polygon data</strong> (GeoJSON/KML)</td><td>When you upload files</td><td>To define your coverage zones and check addresses against them</td></tr>
+        <tr><td><strong>Street addresses</strong></td><td>When you run a coverage check</td><td>To geocode and test against your polygons</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Information collected automatically</h3>
+    <table class="data-table">
+      <thead>
+        <tr><th>Data</th><th>Why</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Session data</strong> (encrypted cookie)</td><td>To keep you logged in between page loads</td></tr>
+        <tr><td><strong>Check history</strong> (address, result, timestamp)</td><td>To show you your recent coverage lookups</td></tr>
+        <tr><td><strong>Server logs</strong> (IP address, request path, timestamp)</td><td>Security monitoring and debugging. Logs are retained for a maximum of 30 days.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>What we do NOT collect</h3>
+    <ul>
+      <li>Payment or financial information</li>
+      <li>Device identifiers or browser fingerprints</li>
+      <li>Advertising identifiers</li>
+      <li>Location data beyond what you explicitly submit as an address</li>
+      <li>Social media profile data</li>
+    </ul>
+  </div>
+
+  <div class="section" id="how-we-use">
+    <h2>3. How We Use Your Data</h2>
+    <p>We use the data we collect for the following purposes:</p>
+    <ul>
+      <li><strong>Providing the Service:</strong> Running address checks, storing your projects and polygons, and displaying your check history.</li>
+      <li><strong>Account management:</strong> Verifying your email address, authenticating you on login, and processing password resets.</li>
+      <li><strong>Transactional emails:</strong> Sending account verification and password-reset emails. We do not send marketing emails.</li>
+      <li><strong>Security:</strong> Detecting and preventing fraud, abuse, and unauthorized access.</li>
+      <li><strong>Service improvement:</strong> Understanding how the Service is used in aggregate (not individually) to guide product decisions.</li>
+      <li><strong>Legal compliance:</strong> Complying with applicable laws, regulations, and lawful requests.</li>
+    </ul>
+    <p>We will not use your data for any purpose not described here without first obtaining your consent.</p>
+  </div>
+
+  <div class="section" id="third-parties">
+    <h2>4. Third-Party Services</h2>
+    <p>RightG relies on the following third-party services. When you use the Service, data may be transmitted to these providers:</p>
+
+    <h3>Geocoding Providers</h3>
+    <p>When you submit an address for a coverage check, that address is sent to a geocoding provider to obtain geographic coordinates:</p>
+    <ul>
+      <li><strong>OpenStreetMap Nominatim</strong> — used by default. Street addresses are sent to Nominatim's public API. Nominatim is operated by the OpenStreetMap Foundation. See their <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener" style="color:var(--primary)">privacy policy</a>.</li>
+      <li><strong>Mapbox</strong> — optionally configured by service operators. If enabled, addresses are sent to Mapbox. See <a href="https://www.mapbox.com/legal/privacy" target="_blank" rel="noopener" style="color:var(--primary)">Mapbox's privacy policy</a>.</li>
+    </ul>
+    <p>We transmit only the address string — no account information is sent to geocoding providers.</p>
+
+    <h3>Infrastructure</h3>
+    <ul>
+      <li><strong>Railway</strong> — our cloud hosting provider. Server infrastructure, database, and file storage are hosted on Railway. See <a href="https://railway.app/legal/privacy" target="_blank" rel="noopener" style="color:var(--primary)">Railway's privacy policy</a>.</li>
+      <li><strong>Resend</strong> — used to send transactional emails. Your email address is transmitted to Resend when we send you a verification or password-reset email. See <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener" style="color:var(--primary)">Resend's privacy policy</a>.</li>
+    </ul>
+
+    <p>We select third-party providers that maintain appropriate data protection standards. We do not authorize these providers to use your data for their own purposes.</p>
+  </div>
+
+  <div class="section" id="sharing">
+    <h2>5. Data Sharing</h2>
+    <p>We do not sell, rent, or trade your personal information to third parties for marketing or any other commercial purpose.</p>
+    <p>We may share your information only in the following circumstances:</p>
+    <ul>
+      <li><strong>Service providers:</strong> With third-party vendors that process data on our behalf as described in Section 4, under appropriate data processing agreements.</li>
+      <li><strong>Legal requirements:</strong> If required by law, court order, or lawful government request, we may disclose information necessary to comply.</li>
+      <li><strong>Protection of rights:</strong> Where we believe disclosure is necessary to protect the rights, property, or safety of RightG, our users, or the public.</li>
+      <li><strong>Business transfers:</strong> In the event of a merger, acquisition, or sale of substantially all assets, your data may be transferred to the acquiring entity, which will be bound by this Privacy Policy.</li>
+    </ul>
+  </div>
+
+  <div class="section" id="retention">
+    <h2>6. Data Retention</h2>
+    <p>We retain your data for as long as your account is active or as necessary to provide the Service. Specifically:</p>
+    <ul>
+      <li><strong>Account data</strong> (name, email, password hash) — retained until you delete your account.</li>
+      <li><strong>Projects and polygon data</strong> — retained until you delete them or delete your account.</li>
+      <li><strong>Address check history</strong> — the most recent 20 checks per project are stored; older checks are not retained indefinitely.</li>
+      <li><strong>Email tokens</strong> (verification, password reset) — deleted once used or expired (within 24 hours of creation).</li>
+      <li><strong>Server logs</strong> — retained for up to 30 days for security purposes.</li>
+    </ul>
+    <p>When you delete your account, we will delete or anonymize your personal data within 30 days, except where retention is required for legal or audit purposes.</p>
+  </div>
+
+  <div class="section" id="security">
+    <h2>7. Security</h2>
+    <p>We take reasonable technical and organizational measures to protect your data, including:</p>
+    <ul>
+      <li>Passwords are stored using PBKDF2-SHA256 with a unique salt — we cannot recover your plaintext password.</li>
+      <li>All data transmission between your browser and our servers uses HTTPS/TLS encryption.</li>
+      <li>Session tokens are stored in encrypted, HTTP-only cookies.</li>
+      <li>Database access is restricted to application servers.</li>
+    </ul>
+    <p>No method of transmission over the Internet or electronic storage is 100% secure. While we strive to protect your data, we cannot guarantee absolute security. In the event of a data breach that affects your personal information, we will notify you as required by applicable law.</p>
+  </div>
+
+  <div class="section" id="your-rights">
+    <h2>8. Your Rights</h2>
+    <p>Depending on your location, you may have the following rights regarding your personal data:</p>
+    <ul>
+      <li><strong>Access:</strong> Request a copy of the personal data we hold about you.</li>
+      <li><strong>Correction:</strong> Request correction of inaccurate or incomplete data.</li>
+      <li><strong>Deletion:</strong> Request deletion of your personal data. You can delete most data directly within the Service; for account deletion contact us.</li>
+      <li><strong>Restriction:</strong> Request that we restrict processing of your data in certain circumstances.</li>
+      <li><strong>Portability:</strong> Request your data in a structured, machine-readable format.</li>
+      <li><strong>Objection:</strong> Object to certain types of processing, including processing for direct marketing (though we do not conduct direct marketing).</li>
+    </ul>
+    <p>To exercise any of these rights, contact us at <strong>privacy@rightg.com</strong>. We will respond within 30 days. We may need to verify your identity before fulfilling a request.</p>
+    <p>If you are in the European Economic Area (EEA) or UK and believe we have not handled your data appropriately, you have the right to lodge a complaint with your local data protection authority.</p>
+  </div>
+
+  <div class="section" id="cookies">
+    <h2>9. Cookies &amp; Local Storage</h2>
+    <p>We use a minimal set of browser storage mechanisms:</p>
+    <ul>
+      <li><strong>Session cookie:</strong> A single encrypted, HTTP-only session cookie is set when you log in to keep you authenticated. It is deleted when you log out or your session expires.</li>
+      <li><strong>localStorage:</strong> We store your UI preference (grid vs. list view on the projects page) in your browser's localStorage. This contains no personal information and is never transmitted to our servers.</li>
+    </ul>
+    <p>We do not use advertising cookies, tracking pixels, or third-party analytics cookies. No cookie consent banner is required for our essential session cookie under most privacy frameworks, but we disclose it here for full transparency.</p>
+  </div>
+
+  <div class="section" id="children">
+    <h2>10. Children's Privacy</h2>
+    <p>The Service is not directed to children under the age of 13 (or 16 in the EEA). We do not knowingly collect personal information from children. If you believe a child has provided us with personal information, please contact us and we will promptly delete it.</p>
+  </div>
+
+  <div class="section" id="changes">
+    <h2>11. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy periodically. When we make material changes, we will update the "Last updated" date at the top and, where appropriate, notify you by email or a notice on the Service.</p>
+    <p>Your continued use of the Service after any changes constitutes your acceptance of the updated policy. We encourage you to review this page regularly.</p>
+  </div>
+
+  <div class="section" id="contact">
+    <h2>12. Contact Us</h2>
+    <p>If you have questions, concerns, or requests regarding this Privacy Policy or your personal data, please contact us:</p>
+    <ul>
+      <li><strong>Privacy inquiries:</strong> privacy@rightg.com</li>
+      <li><strong>General contact:</strong> legal@rightg.com</li>
+      <li><strong>Website:</strong> <a href="https://www.rightg.com" style="color:var(--primary)">www.rightg.com</a></li>
+    </ul>
+    <p>We aim to respond to all privacy-related requests within 30 days.</p>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-copy">&copy; 2026 RightG. All rights reserved.</div>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/terms">Terms of Service</a>
+    <a href="/privacy">Privacy Policy</a>
+    <a href="/login">Log in</a>
+  </div>
+</footer>
+
+</body>
+</html>

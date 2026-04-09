@@ -699,6 +699,16 @@ def verify_email_page() -> FileResponse:
     return FileResponse(STATIC_DIR / "verify_email.html")
 
 
+@app.get("/terms")
+def terms_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "terms.html")
+
+
+@app.get("/privacy")
+def privacy_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "privacy.html")
+
+
 # ─── Auth API ─────────────────────────────────────────────────────────────────
 
 @app.get("/api/health")

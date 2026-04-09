@@ -91,9 +91,11 @@
 
     /* FOOTER */
     footer {
-      text-align: center; padding: 32px 20px; color: var(--muted);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+      padding: 28px 48px; color: var(--muted);
       font-size: 14px; border-top: 1px solid var(--line); background: #fff;
     }
+    @media (max-width: 600px) { footer { justify-content: center; padding: 24px 20px; } }
 
     .alt-bg { background: #f1f5f9; }
 
@@ -195,7 +197,11 @@
   </section>
 
   <footer>
-    &copy; 2026 RightG. All rights reserved.
+    <span>&copy; 2026 RightG. All rights reserved.</span>
+    <span style="display:flex;gap:16px;font-size:13px;">
+      <a href="/terms" style="color:inherit;text-decoration:none;opacity:.7;">Terms of Service</a>
+      <a href="/privacy" style="color:inherit;text-decoration:none;opacity:.7;">Privacy Policy</a>
+    </span>
   </footer>
 
 </body>
