@@ -583,13 +583,17 @@ def send_email_message(to_email: str, subject: str, text_body: str) -> bool:
     msg["From"] = from_email
     msg["To"] = to_email
     msg.set_content(text_body)
-    with smtplib.SMTP(host, port, timeout=20) as server:
-        if use_tls:
-            server.starttls()
-        if username and password:
-            server.login(username, password)
-        server.send_message(msg)
-    return True
+    try:
+        with smtplib.SMTP(host, port, timeout=15) as server:
+            if use_tls:
+                server.starttls()
+            if username and password:
+                server.login(username, password)
+            server.send_message(msg)
+        return True
+    except Exception as exc:
+        print(f"[email] Failed to send to {to_email}: {exc}")
+        return False
 
 
 def issue_email_verification(user_id: int, email: str, base_url: str) -> str:
