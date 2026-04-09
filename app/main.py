@@ -725,9 +725,16 @@ def me(request: Request) -> UserResponse:
 def signup(request: Request, payload: SignupRequest) -> GenericMessage:
     email = payload.email.lower().strip()
     with get_db() as conn:
-        existing = conn.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
+        existing = conn.execute("SELECT id, is_verified FROM users WHERE email = ?", (email,)).fetchone()
         if existing:
-            raise HTTPException(status_code=400, detail="An account with that email already exists.")
+            if bool(existing["is_verified"]):
+                raise HTTPException(status_code=400, detail="An account with that email already exists. Please log in.")
+            # Account exists but is unverified — resend verification email
+            preview_url = issue_email_verification(int(existing["id"]), email, app_base_url(request))
+            return GenericMessage(
+                message="A verification email has been sent. Please check your inbox to activate your account.",
+                preview_url=preview_url,
+            )
         cursor = conn.execute(
             "INSERT INTO users (full_name, email, password_hash, created_at, is_verified) VALUES (?, ?, ?, ?, 0)",
             (payload.full_name.strip(), email, hash_password(payload.password), utc_now_iso()),
