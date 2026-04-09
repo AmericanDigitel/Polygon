@@ -6,277 +6,538 @@
   <title>Projects — RightG</title>
   <style>
     :root {
-      --primary: #2563eb; --primary-dk: #1d4ed8; --primary-lt: #eff6ff;
-      --text: #0f172a; --muted: #64748b; --muted2: #94a3b8;
-      --bg: #f8fafc; --card: #ffffff; --line: #e2e8f0;
-      --red: #ef4444; --red-lt: #fef2f2;
+      --primary: #2563eb; --primary-dk: #1d4ed8; --primary-lt: #eff6ff; --primary-ring: #bfdbfe;
+      --text: #0f172a; --text2: #334155; --muted: #64748b; --muted2: #94a3b8;
+      --bg: #f1f5f9; --card: #ffffff; --line: #e2e8f0; --line2: #f1f5f9;
+      --red: #ef4444; --red-lt: #fef2f2; --red-ring: #fecaca;
       --green: #16a34a; --green-lt: #f0fdf4;
-      --radius: 14px;
+      --nav-h: 58px;
+      --sidebar-w: 220px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Inter", Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    html, body { height: 100%; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Arial, sans-serif;
+           background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
 
-    /* ── NAV ── */
-    .nav {
-      position: sticky; top: 0; z-index: 50;
-      background: #fff; border-bottom: 1px solid var(--line);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 28px; height: 60px; gap: 16px;
+    /* ───────────────────────────────── TOP NAV ─── */
+    .topnav {
+      height: var(--nav-h); background: #fff; border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; padding: 0 24px; gap: 12px;
+      position: sticky; top: 0; z-index: 200; flex-shrink: 0;
     }
-    .nav-logo { font-size: 20px; font-weight: 800; color: var(--primary); letter-spacing: -.4px; text-decoration: none; }
-    .nav-right { display: flex; align-items: center; gap: 10px; }
-    .nav-user { font-size: 13px; font-weight: 600; color: var(--muted); background: var(--bg); padding: 6px 12px; border-radius: 8px; }
-    .nav-btn { font-size: 13px; font-weight: 600; color: var(--muted); background: none; border: 1px solid var(--line); padding: 6px 14px; border-radius: 8px; cursor: pointer; }
-    .nav-btn:hover { background: var(--bg); color: var(--text); }
-
-    /* ── PAGE ── */
-    .page { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
-    .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; gap: 16px; flex-wrap: wrap; }
-    .page-head h1 { font-size: 28px; font-weight: 800; }
-    .page-head p { font-size: 14px; color: var(--muted); margin-top: 4px; }
-
-    /* ── NEW PROJECT BUTTON / PANEL ── */
-    .btn-new { background: var(--primary); color: #fff; font-size: 14px; font-weight: 700; padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-    .btn-new:hover { background: var(--primary-dk); }
-
-    .new-panel {
-      background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
-      padding: 24px; margin-bottom: 28px; display: none;
+    .logo { font-size: 18px; font-weight: 900; color: var(--primary); letter-spacing: -.5px; text-decoration: none; flex-shrink: 0; }
+    .nav-sep { width: 1px; height: 20px; background: var(--line); }
+    .nav-page { font-size: 14px; font-weight: 700; color: var(--text2); }
+    .nav-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: #fff;
+      font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
     }
-    .new-panel.open { display: block; }
-    .new-panel h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
-    .form-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
-    .form-field { flex: 1; min-width: 180px; }
-    .form-field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
-    .form-field input { width: 100%; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; }
-    .form-field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-    .form-actions { display: flex; gap: 8px; align-items: flex-end; }
-    .btn-save { background: var(--primary); color: #fff; font-size: 14px; font-weight: 700; padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; white-space: nowrap; }
-    .btn-save:hover { background: var(--primary-dk); }
-    .btn-cancel { background: none; color: var(--muted); font-size: 14px; font-weight: 600; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); cursor: pointer; }
-    .btn-cancel:hover { background: var(--bg); }
+    .nav-name { font-size: 13px; font-weight: 600; color: var(--text2); }
+    .nav-logout { font-size: 13px; font-weight: 600; color: var(--muted); background: none; border: 1px solid var(--line); padding: 5px 12px; border-radius: 7px; cursor: pointer; }
+    .nav-logout:hover { background: var(--bg); color: var(--text); }
 
-    /* ── PROJECT CARDS ── */
-    .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    /* ───────────────────────────────── PAGE ─── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 36px 24px 80px; width: 100%; }
 
-    .project-card {
-      background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-      padding: 20px 20px 16px; display: flex; flex-direction: column; gap: 14px;
-      transition: box-shadow .15s, border-color .15s;
+    /* ───────────────────────────────── STATS BAR ─── */
+    .stats-bar { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+    .stat-card {
+      background: #fff; border: 1px solid var(--line); border-radius: 12px;
+      padding: 14px 20px; min-width: 130px; flex: 1;
     }
-    .project-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); border-color: #c7d7f0; }
+    .stat-val { font-size: 26px; font-weight: 900; line-height: 1; }
+    .stat-lbl { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-top: 4px; }
 
-    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .card-name { font-size: 17px; font-weight: 800; line-height: 1.3; }
-    .card-desc { font-size: 13px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
-    .card-badge {
-      font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
-      background: var(--primary-lt); color: var(--primary); white-space: nowrap; flex-shrink: 0;
+    /* ───────────────────────────────── TOOLBAR ─── */
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .toolbar-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+
+    .search-wrap { position: relative; flex: 1; max-width: 320px; }
+    .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted2); pointer-events: none; }
+    .search-input {
+      width: 100%; padding: 9px 12px 9px 34px; border: 1px solid var(--line); border-radius: 9px;
+      font-size: 13px; font-family: inherit; outline: none; background: #fff;
+    }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+
+    .sort-select {
+      padding: 9px 28px 9px 10px; border: 1px solid var(--line); border-radius: 9px;
+      font-size: 13px; font-family: inherit; outline: none; background: #fff;
+      appearance: none; cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 8px center;
     }
 
-    .card-meta { font-size: 12px; color: var(--muted2); display: flex; gap: 12px; flex-wrap: wrap; }
+    .view-toggle { display: flex; background: var(--bg); border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 2px; }
+    .view-btn { width: 32px; height: 28px; border: none; border-radius: 6px; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); }
+    .view-btn.active { background: #fff; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
 
-    .card-actions { display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px; }
-    .btn-open {
-      flex: 1; background: var(--primary); color: #fff; font-size: 13px; font-weight: 700;
-      padding: 9px 14px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none;
-      display: flex; align-items: center; justify-content: center; gap: 5px;
+    .btn-new-project {
+      display: flex; align-items: center; gap: 6px; background: var(--primary); color: #fff;
+      font-size: 13px; font-weight: 700; padding: 9px 16px; border-radius: 9px; border: none;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
     }
-    .btn-open:hover { background: var(--primary-dk); }
-    .btn-manage {
-      background: var(--bg); color: var(--text); font-size: 13px; font-weight: 600;
-      padding: 9px 14px; border-radius: 9px; border: 1px solid var(--line); cursor: pointer;
-      text-decoration: none; display: flex; align-items: center; gap: 5px; white-space: nowrap;
-    }
-    .btn-manage:hover { background: var(--line); }
-    .btn-del {
-      background: var(--red-lt); color: var(--red); font-size: 13px; font-weight: 600;
-      padding: 9px 12px; border-radius: 9px; border: none; cursor: pointer;
-    }
-    .btn-del:hover { background: #fee2e2; }
+    .btn-new-project:hover { background: var(--primary-dk); }
 
-    /* ── EMPTY STATE ── */
-    .empty { text-align: center; padding: 72px 20px; }
-    .empty-icon { font-size: 52px; margin-bottom: 16px; }
-    .empty h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-    .empty p { color: var(--muted); font-size: 14px; max-width: 320px; margin: 0 auto 24px; line-height: 1.6; }
+    /* ───────────────────────────────── GRID VIEW ─── */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
 
-    /* ── TOAST ── */
+    .proj-card {
+      background: #fff; border: 1px solid var(--line); border-radius: 14px;
+      overflow: hidden; transition: box-shadow .15s, border-color .15s; display: flex; flex-direction: column;
+    }
+    .proj-card:hover { box-shadow: 0 4px 20px rgba(15,23,42,.09); border-color: #c7d7f4; }
+
+    .card-color-bar { height: 4px; }
+
+    .card-body { padding: 18px 18px 14px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+
+    .card-header { display: flex; align-items: flex-start; gap: 12px; }
+    .proj-avatar {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      font-size: 17px; font-weight: 900; color: #fff;
+      display: flex; align-items: center; justify-content: center; letter-spacing: -.5px;
+    }
+    .card-titles { flex: 1; min-width: 0; }
+    .card-name { font-size: 16px; font-weight: 800; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-desc { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-poly-badge {
+      font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+      background: var(--primary-lt); color: var(--primary); white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+    }
+
+    .card-meta { display: flex; gap: 14px; font-size: 11px; color: var(--muted2); }
+
+    .card-footer { display: flex; gap: 8px; border-top: 1px solid var(--line2); padding-top: 12px; margin-top: auto; }
+    .btn-open-card {
+      flex: 1; background: var(--primary); color: #fff; font-size: 12px; font-weight: 700;
+      padding: 8px 10px; border-radius: 8px; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 4px; text-decoration: none;
+    }
+    .btn-open-card:hover { background: var(--primary-dk); }
+    .btn-mgmt {
+      background: var(--bg); color: var(--text2); font-size: 12px; font-weight: 600;
+      padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); cursor: pointer;
+      display: flex; align-items: center; gap: 4px; text-decoration: none; white-space: nowrap;
+    }
+    .btn-mgmt:hover { background: var(--line); }
+    .btn-del-card {
+      background: none; color: var(--muted2); border: 1px solid var(--line);
+      padding: 8px 9px; border-radius: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center;
+    }
+    .btn-del-card:hover { background: var(--red-lt); color: var(--red); border-color: var(--red-ring); }
+
+    /* ───────────────────────────────── LIST VIEW ─── */
+    .list-view { display: none; }
+    .list-view.active { display: block; }
+    .grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+    .grid-view.hidden { display: none; }
+
+    .list-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .list-table thead tr { border-bottom: 1px solid var(--line); }
+    .list-table th { text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; padding: 12px 16px; background: var(--bg); }
+    .list-table tbody tr { border-bottom: 1px solid var(--line2); transition: background .1s; }
+    .list-table tbody tr:last-child { border-bottom: none; }
+    .list-table tbody tr:hover { background: #f8fafc; }
+    .list-table td { padding: 14px 16px; font-size: 13px; vertical-align: middle; }
+    .list-proj-cell { display: flex; align-items: center; gap: 12px; }
+    .list-avatar { width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0; font-size: 14px; font-weight: 900; color: #fff; display: flex; align-items: center; justify-content: center; }
+    .list-name { font-weight: 700; font-size: 14px; }
+    .list-desc { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .list-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--primary-lt); color: var(--primary); display: inline-block; }
+    .list-date { font-size: 12px; color: var(--muted); }
+    .list-actions { display: flex; gap: 6px; }
+    .btn-ls {
+      font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 7px; border: none; cursor: pointer;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+    }
+    .btn-ls.primary { background: var(--primary); color: #fff; }
+    .btn-ls.primary:hover { background: var(--primary-dk); }
+    .btn-ls.ghost { background: var(--bg); color: var(--text2); border: 1px solid var(--line); }
+    .btn-ls.ghost:hover { background: var(--line); }
+    .btn-ls.danger { background: var(--red-lt); color: var(--red); border: 1px solid var(--red-ring); }
+    .btn-ls.danger:hover { background: var(--red-ring); }
+
+    /* ───────────────────────────────── EMPTY STATE ─── */
+    .empty { text-align: center; padding: 80px 20px; background: #fff; border: 1px solid var(--line); border-radius: 14px; }
+    .empty-icon { font-size: 48px; margin-bottom: 14px; }
+    .empty h2 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .empty p { color: var(--muted); font-size: 14px; max-width: 300px; margin: 0 auto 24px; line-height: 1.6; }
+
+    /* ───────────────────────────────── MODAL ─── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 500; opacity: 0; pointer-events: none; transition: opacity .18s;
+      backdrop-filter: blur(2px);
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: #fff; border-radius: 18px; padding: 28px; width: 100%; max-width: 460px;
+      box-shadow: 0 24px 60px rgba(15,23,42,.25); transform: translateY(10px); transition: transform .18s;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+    .modal-head h2 { font-size: 19px; font-weight: 800; }
+    .modal-close { background: var(--bg); border: none; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 16px; color: var(--muted); display: flex; align-items: center; justify-content: center; }
+    .modal-close:hover { background: var(--line); }
+    .modal-field { margin-bottom: 16px; }
+    .modal-field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+    .modal-field input, .modal-field textarea {
+      width: 100%; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px;
+      font-size: 14px; font-family: inherit; outline: none; resize: none;
+    }
+    .modal-field input:focus, .modal-field textarea:focus {
+      border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    }
+    .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
+    .btn-modal-create { flex: 1; background: var(--primary); color: #fff; font-size: 14px; font-weight: 700; padding: 12px; border-radius: 10px; border: none; cursor: pointer; }
+    .btn-modal-create:hover { background: var(--primary-dk); }
+    .btn-modal-cancel { background: var(--bg); color: var(--muted); font-size: 14px; font-weight: 600; padding: 12px 18px; border-radius: 10px; border: 1px solid var(--line); cursor: pointer; }
+    .btn-modal-cancel:hover { background: var(--line); }
+
+    /* ───────────────────────────────── TOAST ─── */
     #toast {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px);
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(70px);
       background: #1e293b; color: #fff; padding: 10px 20px; border-radius: 10px;
       font-size: 13px; font-weight: 600; transition: transform .2s; z-index: 999; pointer-events: none;
+      display: flex; align-items: center; gap: 8px;
     }
     #toast.show { transform: translateX(-50%) translateY(0); }
 
-    @media (max-width: 600px) {
-      .nav { padding: 0 16px; }
-      .page { padding: 24px 16px 60px; }
-      .form-row { flex-direction: column; }
-      .projects-grid { grid-template-columns: 1fr; }
+    /* ───────────────────────────────── RESPONSIVE ─── */
+    @media (max-width: 640px) {
+      .topnav { padding: 0 16px; }
+      .nav-name { display: none; }
+      .page { padding: 20px 14px 60px; }
+      .stats-bar { gap: 8px; }
+      .stat-card { min-width: 90px; padding: 12px 14px; }
+      .stat-val { font-size: 22px; }
+      .search-wrap { max-width: 100%; }
     }
   </style>
 </head>
 <body>
 
-  <!-- NAV -->
-  <nav class="nav">
-    <a class="nav-logo" href="/">RightG</a>
-    <div class="nav-right">
-      <span id="userChip" class="nav-user">Loading…</span>
-      <button class="nav-btn" onclick="logout()">Log out</button>
-    </div>
-  </nav>
+<!-- ─── TOP NAV ─── -->
+<nav class="topnav">
+  <a class="logo" href="/">RightG</a>
+  <div class="nav-sep"></div>
+  <span class="nav-page">Projects</span>
+  <div class="nav-right">
+    <div id="navAvatar" class="avatar">S</div>
+    <span id="navName" class="nav-name">Loading…</span>
+    <button class="nav-logout" onclick="logout()">Log out</button>
+  </div>
+</nav>
 
-  <div class="page">
-    <!-- Header -->
-    <div class="page-head">
-      <div>
-        <h1>My Projects</h1>
-        <p>Each project has its own polygons and address check history.</p>
-      </div>
-      <button class="btn-new" onclick="toggleNewPanel()">
-        <span>＋</span> New Project
-      </button>
-    </div>
+<div class="page">
 
-    <!-- Create project panel -->
-    <div id="newPanel" class="new-panel">
-      <h3>Create a new project</h3>
-      <form class="form-row" onsubmit="createProject(event)">
-        <div class="form-field">
-          <label>Project name *</label>
-          <input id="pName" type="text" placeholder="e.g. Irvine Service Area" required maxlength="200" />
-        </div>
-        <div class="form-field">
-          <label>Description (optional)</label>
-          <input id="pDesc" type="text" placeholder="Short note about this project" maxlength="500" />
-        </div>
-        <div class="form-actions">
-          <button class="btn-save" type="submit">Create</button>
-          <button class="btn-cancel" type="button" onclick="toggleNewPanel()">Cancel</button>
-        </div>
-      </form>
+  <!-- ─── STATS BAR ─── -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div id="statProjects" class="stat-val">—</div>
+      <div class="stat-lbl">Projects</div>
     </div>
-
-    <!-- Project list -->
-    <div id="container">
-      <div class="empty"><div class="empty-icon">⏳</div><h2>Loading…</h2></div>
+    <div class="stat-card">
+      <div id="statPolygons" class="stat-val">—</div>
+      <div class="stat-lbl">Total Polygons</div>
+    </div>
+    <div class="stat-card">
+      <div id="statAvg" class="stat-val">—</div>
+      <div class="stat-lbl">Avg per Project</div>
     </div>
   </div>
 
-  <div id="toast">Done.</div>
+  <!-- ─── TOOLBAR ─── -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <!-- Search -->
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="searchInput" class="search-input" type="text" placeholder="Search projects…" oninput="filterProjects()" />
+      </div>
+      <!-- Sort -->
+      <select class="sort-select" id="sortSelect" onchange="filterProjects()">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="name">Name A–Z</option>
+        <option value="polygons">Most polygons</option>
+      </select>
+      <!-- View toggle -->
+      <div class="view-toggle">
+        <button class="view-btn active" id="btnGrid" onclick="setView('grid')" title="Grid view">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </button>
+        <button class="view-btn" id="btnList" onclick="setView('list')" title="List view">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <button class="btn-new-project" onclick="openModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Project
+    </button>
+  </div>
 
-  <script>
-    let panelOpen = false;
+  <!-- ─── GRID VIEW ─── -->
+  <div id="gridView" class="grid-view"></div>
 
-    function toggleNewPanel() {
-      panelOpen = !panelOpen;
-      document.getElementById('newPanel').classList.toggle('open', panelOpen);
-      if (panelOpen) document.getElementById('pName').focus();
-    }
+  <!-- ─── LIST VIEW ─── -->
+  <div id="listView" class="list-view">
+    <table class="list-table">
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Polygons</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="listBody"></tbody>
+    </table>
+  </div>
 
-    function esc(v) {
-      return String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
-        .replaceAll('"','&quot;').replaceAll("'",'&#39;');
-    }
-    function fmt(v) {
-      const d = new Date(v);
-      return isNaN(d) ? v : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    }
-    function toast(msg) {
-      const t = document.getElementById('toast');
-      t.innerText = msg; t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2600);
-    }
+</div>
 
-    async function requireAuth() {
-      const r = await fetch('/api/me');
-      if (r.status === 401) { location.href = '/login'; throw 0; }
-      const u = await r.json();
-      document.getElementById('userChip').innerText = u.full_name;
-    }
+<!-- ─── NEW PROJECT MODAL ─── -->
+<div id="modalOverlay" class="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Create new project</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <form onsubmit="createProject(event)">
+      <div class="modal-field">
+        <label>Project name *</label>
+        <input id="mName" type="text" placeholder="e.g. Irvine Service Area" required maxlength="200" />
+      </div>
+      <div class="modal-field">
+        <label>Description <span style="font-weight:400;text-transform:none">(optional)</span></label>
+        <textarea id="mDesc" rows="2" placeholder="Short note about what this project covers" maxlength="500"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" type="button" onclick="closeModal()">Cancel</button>
+        <button class="btn-modal-create" type="submit">Create Project</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-    async function load() {
-      const r = await fetch('/api/projects');
-      if (r.status === 401) { location.href = '/login'; return; }
-      render(await r.json());
-    }
+<!-- ─── TOAST ─── -->
+<div id="toast">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg">Done.</span>
+</div>
 
-    function render(list) {
-      const c = document.getElementById('container');
-      if (!list.length) {
-        c.innerHTML = `<div class="empty">
-          <div class="empty-icon">🗂️</div>
-          <h2>No projects yet</h2>
-          <p>Click "New Project" above to get started. Each project holds its own set of polygons and address history.</p>
-          <button class="btn-new" onclick="toggleNewPanel()" style="margin:0 auto">＋ Create first project</button>
-        </div>`; return;
-      }
-      c.innerHTML = `<div class="projects-grid">${list.map(card).join('')}</div>`;
-    }
+<script>
+  /* ── palette for project avatars ── */
+  const PALETTE = [
+    ['#2563eb','#dbeafe'], ['#7c3aed','#ede9fe'], ['#059669','#d1fae5'],
+    ['#d97706','#fef3c7'], ['#dc2626','#fee2e2'], ['#0891b2','#cffafe'],
+    ['#db2777','#fce7f3'], ['#65a30d','#ecfccb'], ['#9333ea','#f3e8ff'],
+  ];
+  function palette(name) { let h=0; for(let c of name) h=(h*31+c.charCodeAt(0))&0xffff; return PALETTE[h%PALETTE.length]; }
 
-    function card(p) {
-      const polyTxt = p.polygon_count === 1 ? '1 polygon' : `${p.polygon_count} polygons`;
-      const desc = p.description ? `<div class="card-desc">${esc(p.description)}</div>` : '';
-      return `<div class="project-card">
-        <div>
-          <div class="card-top">
-            <div>
-              <div class="card-name">${esc(p.name)}</div>
-              ${desc}
-            </div>
-            <span class="card-badge">${polyTxt}</span>
+  /* ── state ── */
+  let allProjects = [];
+  let currentView = localStorage.getItem('rgView') || 'grid';
+
+  /* ── helpers ── */
+  function esc(v) {
+    return String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+      .replaceAll('"','&quot;').replaceAll("'",'&#39;');
+  }
+  function fmt(v) {
+    const d = new Date(v);
+    return isNaN(d) ? v : d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+  function toast(msg, isErr=false) {
+    document.getElementById('toastMsg').innerText = msg;
+    const t = document.getElementById('toast');
+    t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2800);
+  }
+
+  /* ── view toggle ── */
+  function setView(v) {
+    currentView = v; localStorage.setItem('rgView', v);
+    document.getElementById('gridView').classList.toggle('hidden', v !== 'grid');
+    document.getElementById('listView').classList.toggle('active', v === 'list');
+    document.getElementById('btnGrid').classList.toggle('active', v === 'grid');
+    document.getElementById('btnList').classList.toggle('active', v === 'list');
+    renderAll(allProjects);
+  }
+
+  /* ── boot ── */
+  async function boot() {
+    const r = await fetch('/api/me');
+    if (r.status === 401) { location.href = '/login'; return; }
+    const u = await r.json();
+    const initials = u.full_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('navAvatar').innerText = initials;
+    document.getElementById('navName').innerText = u.full_name;
+    setView(currentView);
+    await load();
+  }
+
+  async function load() {
+    const r = await fetch('/api/projects');
+    if (r.status === 401) { location.href = '/login'; return; }
+    allProjects = await r.json();
+    updateStats(allProjects);
+    filterProjects();
+  }
+
+  function updateStats(list) {
+    const totalPoly = list.reduce((s,p)=>s+p.polygon_count,0);
+    document.getElementById('statProjects').innerText = list.length;
+    document.getElementById('statPolygons').innerText = totalPoly;
+    document.getElementById('statAvg').innerText = list.length ? (totalPoly/list.length).toFixed(1) : '—';
+  }
+
+  function filterProjects() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const sort = document.getElementById('sortSelect').value;
+    let list = allProjects.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      (p.description||'').toLowerCase().includes(q)
+    );
+    if (sort==='newest') list.sort((a,b)=>b.id-a.id);
+    else if (sort==='oldest') list.sort((a,b)=>a.id-b.id);
+    else if (sort==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
+    else if (sort==='polygons') list.sort((a,b)=>b.polygon_count-a.polygon_count);
+    renderAll(list);
+  }
+
+  function renderAll(list) {
+    renderGrid(list);
+    renderList(list);
+  }
+
+  /* ── GRID ── */
+  function renderGrid(list) {
+    const c = document.getElementById('gridView');
+    if (!list.length) {
+      c.innerHTML = `<div class="empty" style="grid-column:1/-1">
+        <div class="empty-icon">🗂️</div>
+        <h2>${document.getElementById('searchInput').value ? 'No matching projects' : 'No projects yet'}</h2>
+        <p>${document.getElementById('searchInput').value ? 'Try a different search term.' : 'Create your first project to start checking addresses against coverage zones.'}</p>
+        ${!document.getElementById('searchInput').value ? '<button class="btn-new-project" style="margin:0 auto" onclick="openModal()">＋ New Project</button>' : ''}
+      </div>`; return;
+    }
+    c.innerHTML = list.map(gridCard).join('');
+  }
+
+  function gridCard(p) {
+    const [fg, bg2] = palette(p.name);
+    const init = p.name.trim()[0].toUpperCase();
+    const polyTxt = p.polygon_count===1?'1 polygon':`${p.polygon_count} polygons`;
+    const desc = p.description ? `<div class="card-desc">${esc(p.description)}</div>`:'';
+    return `<div class="proj-card">
+      <div class="card-color-bar" style="background:${fg}"></div>
+      <div class="card-body">
+        <div class="card-header">
+          <div class="proj-avatar" style="background:${fg}">${init}</div>
+          <div class="card-titles">
+            <div class="card-name">${esc(p.name)}</div>
+            ${desc}
           </div>
+          <span class="card-poly-badge">${polyTxt}</span>
         </div>
         <div class="card-meta">
-          <span>📅 Created ${fmt(p.created_at)}</span>
+          <span>📅 ${fmt(p.created_at)}</span>
         </div>
-        <div class="card-actions">
-          <a class="btn-open" href="/checker?project=${p.id}">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <div class="card-footer">
+          <a class="btn-open-card" href="/checker?project=${p.id}">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             Open Checker
           </a>
-          <a class="btn-manage" href="/manage?project=${p.id}">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <a class="btn-mgmt" href="/manage?project=${p.id}">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             Polygons
           </a>
-          <button class="btn-del" onclick="del(event,${p.id})" title="Delete project">🗑</button>
+          <button class="btn-del-card" onclick="del(event,${p.id})" title="Delete project">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
         </div>
-      </div>`;
-    }
+      </div>
+    </div>`;
+  }
 
-    async function createProject(e) {
-      e.preventDefault();
-      const name = document.getElementById('pName').value.trim();
-      const desc = document.getElementById('pDesc').value.trim() || null;
-      const r = await fetch('/api/projects', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ name, description: desc })
-      });
-      if (r.status === 401) { location.href = '/login'; return; }
-      if (!r.ok) { toast((await r.json()).detail || 'Error'); return; }
-      document.getElementById('pName').value = '';
-      document.getElementById('pDesc').value = '';
-      panelOpen = false;
-      document.getElementById('newPanel').classList.remove('open');
-      toast('Project created!'); load();
+  /* ── LIST ── */
+  function renderList(list) {
+    const tbody = document.getElementById('listBody');
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--muted)">
+        ${document.getElementById('searchInput').value ? 'No matching projects.' : 'No projects yet. Create one using the button above.'}
+      </td></tr>`; return;
     }
+    tbody.innerHTML = list.map(listRow).join('');
+  }
 
-    async function del(e, id) {
-      e.preventDefault(); e.stopPropagation();
-      if (!confirm('Delete this project and all its polygons? This cannot be undone.')) return;
-      const r = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
-      if (r.status === 401) { location.href = '/login'; return; }
-      toast('Project deleted.'); load();
-    }
+  function listRow(p) {
+    const [fg] = palette(p.name);
+    const init = p.name.trim()[0].toUpperCase();
+    const polyTxt = p.polygon_count===1?'1 polygon':`${p.polygon_count} polygons`;
+    const desc = p.description ? `<div class="list-desc">${esc(p.description)}</div>`:'';
+    return `<tr>
+      <td>
+        <div class="list-proj-cell">
+          <div class="list-avatar" style="background:${fg}">${init}</div>
+          <div><div class="list-name">${esc(p.name)}</div>${desc}</div>
+        </div>
+      </td>
+      <td><span class="list-badge">${polyTxt}</span></td>
+      <td class="list-date">${fmt(p.created_at)}</td>
+      <td>
+        <div class="list-actions">
+          <a class="btn-ls primary" href="/checker?project=${p.id}">Open Checker</a>
+          <a class="btn-ls ghost" href="/manage?project=${p.id}">Polygons</a>
+          <button class="btn-ls danger" onclick="del(event,${p.id})">Delete</button>
+        </div>
+      </td>
+    </tr>`;
+  }
 
-    async function logout() {
-      await fetch('/api/logout', { method: 'POST' });
-      location.href = '/';
-    }
+  /* ── CRUD ── */
+  function openModal() {
+    document.getElementById('modalOverlay').classList.add('open');
+    setTimeout(()=>document.getElementById('mName').focus(), 80);
+  }
+  function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+  function closeModalOutside(e) { if (e.target===document.getElementById('modalOverlay')) closeModal(); }
+  document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); });
 
-    requireAuth().then(load);
-  </script>
+  async function createProject(e) {
+    e.preventDefault();
+    const name = document.getElementById('mName').value.trim();
+    const desc = document.getElementById('mDesc').value.trim() || null;
+    const r = await fetch('/api/projects', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name, description: desc })
+    });
+    if (r.status===401) { location.href='/login'; return; }
+    if (!r.ok) { toast((await r.json()).detail||'Error'); return; }
+    document.getElementById('mName').value='';
+    document.getElementById('mDesc').value='';
+    closeModal(); toast('Project created!'); load();
+  }
+
+  async function del(e, id) {
+    e.preventDefault(); e.stopPropagation();
+    if (!confirm('Delete this project and all its polygons? This cannot be undone.')) return;
+    await fetch(`/api/projects/${id}`, { method:'DELETE' });
+    toast('Project deleted.'); load();
+  }
+
+  async function logout() {
+    await fetch('/api/logout', { method:'POST' });
+    location.href='/';
+  }
+
+  boot();
+</script>
 </body>
 </html>
