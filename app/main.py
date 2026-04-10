@@ -793,26 +793,19 @@ def me(request: Request) -> UserResponse:
 @app.post("/api/signup", response_model=GenericMessage)
 def signup(request: Request, background_tasks: BackgroundTasks, payload: SignupRequest) -> GenericMessage:
     email = payload.email.lower().strip()
-    base_url = app_base_url(request)
     with get_db() as conn:
         existing = conn.execute("SELECT id, is_verified FROM users WHERE email = ?", (email,)).fetchone()
         if existing:
             if bool(existing["is_verified"]):
                 raise HTTPException(status_code=400, detail="An account with that email already exists. Please log in.")
-            # Account exists but unverified — resend verification in background
-            token = _make_verification_token(int(existing["id"]))
-            verify_url = f"{base_url}/verify-email?token={token}"
-            background_tasks.add_task(send_verification_email, email, verify_url)
-            return GenericMessage(message="A verification email is on its way. Please check your inbox.")
-        cursor = conn.execute(
-            "INSERT INTO users (full_name, email, password_hash, created_at, is_verified) VALUES (?, ?, ?, ?, 0)",
+            # Unverified account — auto-verify and let them log in
+            conn.execute("UPDATE users SET is_verified = 1 WHERE id = ?", (int(existing["id"]),))
+            return GenericMessage(message="Account activated! You can now log in.")
+        conn.execute(
+            "INSERT INTO users (full_name, email, password_hash, created_at, is_verified) VALUES (?, ?, ?, ?, 1)",
             (payload.full_name.strip(), email, hash_password(payload.password), utc_now_iso()),
         )
-        user_id = cursor.lastrowid
-    token = _make_verification_token(user_id)
-    verify_url = f"{base_url}/verify-email?token={token}"
-    background_tasks.add_task(send_verification_email, email, verify_url)
-    return GenericMessage(message="Account created! Check your email to verify your account before logging in.")
+    return GenericMessage(message="Account created! You can now log in.")
 
 
 @app.post("/api/resend-verification", response_model=GenericMessage)
@@ -860,8 +853,6 @@ def login(request: Request, payload: LoginRequest) -> UserResponse:
         row = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
     if not row or not verify_password(payload.password, row["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
-    if not bool(row["is_verified"]):
-        raise HTTPException(status_code=403, detail="Please verify your email before logging in.")
     request.session["user_id"] = row["id"]
     return row_to_user(row)
 

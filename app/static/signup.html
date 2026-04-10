@@ -85,12 +85,9 @@
           showStatus('error', data.detail || 'Signup failed.');
           return;
         }
-        let msg = data.message || 'Account created.';
-        if (data.preview_url) {
-          msg += `\n\nVerification link (email may be delayed):\n${data.preview_url}`;
-        }
-        showStatus('success', msg + '\n\nAfter verifying, go to the login page.');
+        showStatus('success', (data.message || 'Account created.') + '\n\nRedirecting to login…');
         btn.textContent = '✓ Done';
+        setTimeout(() => { window.location.href = '/login'; }, 1500);
       } catch (err) {
         if (err.name === 'AbortError') {
           showStatus('error', 'Request timed out. Please try again.');
