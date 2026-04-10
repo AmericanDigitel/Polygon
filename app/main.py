@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 import requests
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -577,6 +577,7 @@ def send_email_message(to_email: str, subject: str, text_body: str) -> bool:
     from_email = os.getenv("SMTP_FROM_EMAIL")
     use_tls = os.getenv("SMTP_USE_TLS", "true").lower() in {"1", "true", "yes"}
     if not host or not from_email:
+        print("[email] SMTP not configured — skipping send.")
         return False
     msg = EmailMessage()
     msg["Subject"] = subject
@@ -584,19 +585,23 @@ def send_email_message(to_email: str, subject: str, text_body: str) -> bool:
     msg["To"] = to_email
     msg.set_content(text_body)
     try:
-        with smtplib.SMTP(host, port, timeout=15) as server:
+        with smtplib.SMTP(host, port, timeout=8) as server:
+            server.ehlo()
             if use_tls:
                 server.starttls()
+                server.ehlo()
             if username and password:
                 server.login(username, password)
             server.send_message(msg)
+        print(f"[email] Sent '{subject}' to {to_email}")
         return True
     except Exception as exc:
         print(f"[email] Failed to send to {to_email}: {exc}")
         return False
 
 
-def issue_email_verification(user_id: int, email: str, base_url: str) -> str:
+def _make_verification_token(user_id: int) -> str:
+    """Create a fresh email-verification token in the DB and return the token string."""
     token = secrets.token_urlsafe(32)
     with get_db() as conn:
         conn.execute("DELETE FROM email_verification_tokens WHERE user_id = ? AND used_at IS NULL", (user_id,))
@@ -604,18 +609,11 @@ def issue_email_verification(user_id: int, email: str, base_url: str) -> str:
             "INSERT INTO email_verification_tokens (user_id, token, expires_at, created_at) VALUES (?, ?, ?, ?)",
             (user_id, token, add_hours_iso(EMAIL_TOKEN_HOURS), utc_now_iso()),
         )
-    verify_url = f"{base_url}/verify-email?token={token}"
-    body = (
-        "Welcome to RightG.\n\n"
-        "Please verify your email by opening this link:\n"
-        f"{verify_url}\n\n"
-        f"This link expires in {EMAIL_TOKEN_HOURS} hours."
-    )
-    sent = send_email_message(email, "Verify your email", body)
-    return None if sent else verify_url
+    return token
 
 
-def issue_password_reset(user_id: int, email: str, base_url: str) -> str:
+def _make_reset_token(user_id: int) -> str:
+    """Create a fresh password-reset token in the DB and return the token string."""
     token = secrets.token_urlsafe(32)
     with get_db() as conn:
         conn.execute("DELETE FROM password_reset_tokens WHERE user_id = ? AND used_at IS NULL", (user_id,))
@@ -623,14 +621,53 @@ def issue_password_reset(user_id: int, email: str, base_url: str) -> str:
             "INSERT INTO password_reset_tokens (user_id, token, expires_at, created_at) VALUES (?, ?, ?, ?)",
             (user_id, token, add_hours_iso(RESET_TOKEN_HOURS), utc_now_iso()),
         )
-    reset_url = f"{base_url}/reset-password?token={token}"
+    return token
+
+
+def send_verification_email(email: str, verify_url: str) -> None:
+    """Background-safe: send the verification email (called via BackgroundTasks)."""
     body = (
-        "We received a request to reset your password.\n\n"
+        "Welcome to RightG.\n\n"
+        "Please verify your email by opening this link:\n"
+        f"{verify_url}\n\n"
+        f"This link expires in {EMAIL_TOKEN_HOURS} hours."
+    )
+    send_email_message(email, "Verify your RightG email", body)
+
+
+def send_reset_email(email: str, reset_url: str) -> None:
+    """Background-safe: send the password-reset email (called via BackgroundTasks)."""
+    body = (
+        "We received a request to reset your RightG password.\n\n"
         "Open this link to choose a new password:\n"
         f"{reset_url}\n\n"
         f"This link expires in {RESET_TOKEN_HOURS} hour."
     )
-    sent = send_email_message(email, "Reset your password", body)
+    send_email_message(email, "Reset your RightG password", body)
+
+
+# Keep legacy wrappers for any internal callers
+def issue_email_verification(user_id: int, email: str, base_url: str) -> str:
+    token = _make_verification_token(user_id)
+    verify_url = f"{base_url}/verify-email?token={token}"
+    sent = False
+    try:
+        send_verification_email(email, verify_url)
+        sent = True
+    except Exception:
+        pass
+    return None if sent else verify_url
+
+
+def issue_password_reset(user_id: int, email: str, base_url: str) -> str:
+    token = _make_reset_token(user_id)
+    reset_url = f"{base_url}/reset-password?token={token}"
+    sent = False
+    try:
+        send_reset_email(email, reset_url)
+        sent = True
+    except Exception:
+        pass
     return None if sent else reset_url
 
 
@@ -726,42 +763,43 @@ def me(request: Request) -> UserResponse:
 
 
 @app.post("/api/signup", response_model=GenericMessage)
-def signup(request: Request, payload: SignupRequest) -> GenericMessage:
+def signup(request: Request, background_tasks: BackgroundTasks, payload: SignupRequest) -> GenericMessage:
     email = payload.email.lower().strip()
+    base_url = app_base_url(request)
     with get_db() as conn:
         existing = conn.execute("SELECT id, is_verified FROM users WHERE email = ?", (email,)).fetchone()
         if existing:
             if bool(existing["is_verified"]):
                 raise HTTPException(status_code=400, detail="An account with that email already exists. Please log in.")
-            # Account exists but is unverified — resend verification email
-            preview_url = issue_email_verification(int(existing["id"]), email, app_base_url(request))
-            return GenericMessage(
-                message="A verification email has been sent. Please check your inbox to activate your account.",
-                preview_url=preview_url,
-            )
+            # Account exists but unverified — resend verification in background
+            token = _make_verification_token(int(existing["id"]))
+            verify_url = f"{base_url}/verify-email?token={token}"
+            background_tasks.add_task(send_verification_email, email, verify_url)
+            return GenericMessage(message="A verification email is on its way. Please check your inbox.")
         cursor = conn.execute(
             "INSERT INTO users (full_name, email, password_hash, created_at, is_verified) VALUES (?, ?, ?, ?, 0)",
             (payload.full_name.strip(), email, hash_password(payload.password), utc_now_iso()),
         )
         user_id = cursor.lastrowid
-    preview_url = issue_email_verification(user_id, email, app_base_url(request))
-    return GenericMessage(
-        message="Account created. Please verify your email before logging in.",
-        preview_url=preview_url,
-    )
+    token = _make_verification_token(user_id)
+    verify_url = f"{base_url}/verify-email?token={token}"
+    background_tasks.add_task(send_verification_email, email, verify_url)
+    return GenericMessage(message="Account created! Check your email to verify your account before logging in.")
 
 
 @app.post("/api/resend-verification", response_model=GenericMessage)
-def resend_verification(request: Request, payload: ResendVerificationRequest) -> GenericMessage:
+def resend_verification(request: Request, background_tasks: BackgroundTasks, payload: ResendVerificationRequest) -> GenericMessage:
     email = payload.email.lower().strip()
     with get_db() as conn:
         row = conn.execute("SELECT id, is_verified FROM users WHERE email = ?", (email,)).fetchone()
     if not row:
         return GenericMessage(message="If that email exists, a verification link has been sent.")
     if bool(row["is_verified"]):
-        return GenericMessage(message="This email is already verified.")
-    preview_url = issue_email_verification(int(row["id"]), email, app_base_url(request))
-    return GenericMessage(message="Verification email sent.", preview_url=preview_url)
+        return GenericMessage(message="This email is already verified. You can log in.")
+    token = _make_verification_token(int(row["id"]))
+    verify_url = f"{app_base_url(request)}/verify-email?token={token}"
+    background_tasks.add_task(send_verification_email, email, verify_url)
+    return GenericMessage(message="Verification email sent. Please check your inbox.")
 
 
 @app.post("/api/verify-email", response_model=GenericMessage)
@@ -807,14 +845,16 @@ def logout(request: Request) -> dict[str, str]:
 
 
 @app.post("/api/forgot-password", response_model=GenericMessage)
-def forgot_password(request: Request, payload: ForgotPasswordRequest) -> GenericMessage:
+def forgot_password(request: Request, background_tasks: BackgroundTasks, payload: ForgotPasswordRequest) -> GenericMessage:
     email = payload.email.lower().strip()
     with get_db() as conn:
         row = conn.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
     if not row:
         return GenericMessage(message="If that email exists, a reset link has been sent.")
-    preview_url = issue_password_reset(int(row["id"]), email, app_base_url(request))
-    return GenericMessage(message="If that email exists, a reset link has been sent.", preview_url=preview_url)
+    token = _make_reset_token(int(row["id"]))
+    reset_url = f"{app_base_url(request)}/reset-password?token={token}"
+    background_tasks.add_task(send_reset_email, email, reset_url)
+    return GenericMessage(message="If that email exists, a reset link has been sent.")
 
 
 @app.post("/api/reset-password", response_model=GenericMessage)
