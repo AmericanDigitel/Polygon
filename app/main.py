@@ -570,14 +570,42 @@ def app_base_url(request: Request | None = None) -> str:
 
 
 def send_email_message(to_email: str, subject: str, text_body: str) -> bool:
+    """Send email via Resend HTTP API (preferred) with SMTP fallback."""
+    from_email = os.getenv("SMTP_FROM_EMAIL", "noreply@rightg.com")
+
+    # ── Resend HTTP API (works as long as SMTP_PASSWORD is a re_... key) ──
+    resend_api_key = os.getenv("RESEND_API_KEY") or os.getenv("SMTP_PASSWORD", "")
+    if resend_api_key.startswith("re_"):
+        try:
+            resp = requests.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {resend_api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "from": from_email,
+                    "to": [to_email],
+                    "subject": subject,
+                    "text": text_body,
+                },
+                timeout=10,
+            )
+            if resp.status_code in (200, 201):
+                print(f"[email] Resend API: sent '{subject}' to {to_email}")
+                return True
+            print(f"[email] Resend API error {resp.status_code}: {resp.text}")
+        except Exception as exc:
+            print(f"[email] Resend API exception: {exc}")
+
+    # ── SMTP fallback ──────────────────────────────────────────────────────
     host = os.getenv("SMTP_HOST")
     port = int(os.getenv("SMTP_PORT", "587"))
     username = os.getenv("SMTP_USERNAME")
     password = os.getenv("SMTP_PASSWORD")
-    from_email = os.getenv("SMTP_FROM_EMAIL")
     use_tls = os.getenv("SMTP_USE_TLS", "true").lower() in {"1", "true", "yes"}
-    if not host or not from_email:
-        print("[email] SMTP not configured — skipping send.")
+    if not host:
+        print("[email] No email provider configured.")
         return False
     msg = EmailMessage()
     msg["Subject"] = subject
@@ -593,10 +621,10 @@ def send_email_message(to_email: str, subject: str, text_body: str) -> bool:
             if username and password:
                 server.login(username, password)
             server.send_message(msg)
-        print(f"[email] Sent '{subject}' to {to_email}")
+        print(f"[email] SMTP: sent '{subject}' to {to_email}")
         return True
     except Exception as exc:
-        print(f"[email] Failed to send to {to_email}: {exc}")
+        print(f"[email] SMTP failed: {exc}")
         return False
 
 
