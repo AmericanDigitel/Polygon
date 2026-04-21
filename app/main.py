@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 import requests
-from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -49,7 +49,7 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
-# ─── Pydantic Models ──────────────────────────────────────────────────────────
+# âââ Pydantic Models ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 class AddressRequest(BaseModel):
     address: str = Field(..., min_length=3)
@@ -135,7 +135,7 @@ EMAIL_TOKEN_HOURS = 24
 RESET_TOKEN_HOURS = 1
 
 
-# ─── Utilities ────────────────────────────────────────────────────────────────
+# âââ Utilities ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
@@ -159,7 +159,7 @@ def parse_iso(dt_str: str) -> datetime:
     return datetime.fromisoformat(dt_str)
 
 
-# ─── Database Setup ───────────────────────────────────────────────────────────
+# âââ Database Setup âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 @app.on_event("startup")
 def startup() -> None:
@@ -301,7 +301,7 @@ def migrate_legacy_polygons() -> None:
             )
 
 
-# ─── Auth Helpers ─────────────────────────────────────────────────────────────
+# âââ Auth Helpers âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def hash_password(password: str, salt: str | None = None) -> str:
     chosen_salt = salt or secrets.token_hex(16)
@@ -361,7 +361,7 @@ def get_project_for_user(project_id: int, user_id: int) -> sqlite3.Row:
     return row
 
 
-# ─── KML / GeoJSON Helpers ────────────────────────────────────────────────────
+# âââ KML / GeoJSON Helpers ââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def make_label_from_filename(filename: str | None) -> str:
     if not filename:
@@ -524,7 +524,7 @@ def validate_geojson(payload: dict[str, Any], source_filename: str | None = None
     return {"type": "FeatureCollection", "features": cleaned_features}
 
 
-# ─── Geocoding ────────────────────────────────────────────────────────────────
+# âââ Geocoding ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def geocode_address(address: str) -> GeocodeResult:
     provider = os.getenv("GEOCODER_PROVIDER", "nominatim").lower()
@@ -558,7 +558,7 @@ def geocode_address(address: str) -> GeocodeResult:
     return GeocodeResult(lat=float(best["lat"]), lng=float(best["lon"]), display_name=best["display_name"])
 
 
-# ─── Email Helpers ────────────────────────────────────────────────────────────
+# âââ Email Helpers ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def app_base_url(request: Request | None = None) -> str:
     configured = os.getenv("APP_BASE_URL", "").rstrip("/")
@@ -573,7 +573,7 @@ def send_email_message(to_email: str, subject: str, text_body: str) -> bool:
     """Send email via Resend HTTP API (preferred) with SMTP fallback."""
     from_email = os.getenv("SMTP_FROM_EMAIL", "noreply@rightg.com")
 
-    # ── Resend HTTP API (works as long as SMTP_PASSWORD is a re_... key) ──
+    # ââ Resend HTTP API (works as long as SMTP_PASSWORD is a re_... key) ââ
     resend_api_key = os.getenv("RESEND_API_KEY") or os.getenv("SMTP_PASSWORD", "")
     if resend_api_key.startswith("re_"):
         try:
@@ -598,7 +598,7 @@ def send_email_message(to_email: str, subject: str, text_body: str) -> bool:
         except Exception as exc:
             print(f"[email] Resend API exception: {exc}")
 
-    # ── SMTP fallback ──────────────────────────────────────────────────────
+    # ââ SMTP fallback ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     host = os.getenv("SMTP_HOST")
     port = int(os.getenv("SMTP_PORT", "587"))
     username = os.getenv("SMTP_USERNAME")
@@ -699,7 +699,7 @@ def issue_password_reset(user_id: int, email: str, base_url: str) -> str:
     return None if sent else reset_url
 
 
-# ─── Page Routes ──────────────────────────────────────────────────────────────
+# âââ Page Routes ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 @app.get("/")
 def home(request: Request):
@@ -744,8 +744,25 @@ def admin_page(request: Request):
 
 
 @app.get("/login")
-def login_page() -> FileResponse:
-    return FileResponse(STATIC_DIR / "login.html")
+def login_page(request: Request):
+    if request.session.get("user_id"):
+        return RedirectResponse(url="/dashboard", status_code=303)
+    response = FileResponse(STATIC_DIR / "login.html")
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    return response
+
+
+@app.post("/login")
+def login_form(request: Request, email: str = Form(...), password: str = Form(...)):
+    email_clean = email.lower().strip()
+    with get_db() as conn:
+        row = conn.execute("SELECT * FROM users WHERE email = ?", (email_clean,)).fetchone()
+        if not row or not verify_password(password, row["password_hash"]):
+            return RedirectResponse(url="/login?error=1", status_code=303)
+        if not row["is_verified"]:
+            conn.execute("UPDATE users SET is_verified = 1 WHERE id = ?", (row["id"],))
+        request.session["user_id"] = row["id"]
+    return RedirectResponse(url="/dashboard", status_code=303)
 
 
 @app.get("/signup")
@@ -778,7 +795,7 @@ def privacy_page() -> FileResponse:
     return FileResponse(STATIC_DIR / "privacy.html")
 
 
-# ─── Auth API ─────────────────────────────────────────────────────────────────
+# âââ Auth API âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
@@ -798,7 +815,7 @@ def signup(request: Request, background_tasks: BackgroundTasks, payload: SignupR
         if existing:
             if bool(existing["is_verified"]):
                 raise HTTPException(status_code=400, detail="An account with that email already exists. Please log in.")
-            # Unverified account — auto-verify and let them log in
+            # Unverified account â auto-verify and let them log in
             conn.execute("UPDATE users SET is_verified = 1 WHERE id = ?", (int(existing["id"]),))
             return GenericMessage(message="Account activated! You can now log in.")
         conn.execute(
@@ -903,7 +920,7 @@ def reset_password(payload: ResetPasswordRequest) -> GenericMessage:
     return GenericMessage(message="Password reset successfully. You can log in now.")
 
 
-# ─── Projects API ─────────────────────────────────────────────────────────────
+# âââ Projects API âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 @app.get("/api/projects", response_model=list[ProjectResponse])
 def list_projects(request: Request) -> list[ProjectResponse]:
@@ -964,7 +981,7 @@ def delete_project(request: Request, project_id: int) -> dict[str, str]:
     return {"message": "Project deleted."}
 
 
-# ─── Project Polygon API ──────────────────────────────────────────────────────
+# âââ Project Polygon API ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 @app.get("/api/projects/{project_id}/polygons")
 def get_project_polygons(request: Request, project_id: int) -> dict[str, Any]:
@@ -1071,7 +1088,7 @@ def delete_project_polygon(request: Request, project_id: int, polygon_id: str) -
     return {"message": "Polygon deleted.", "remaining_polygon_count": remaining}
 
 
-# ─── Address Check API ────────────────────────────────────────────────────────
+# âââ Address Check API ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 @app.post("/api/projects/{project_id}/check-address", response_model=MatchResponse)
 def check_address(request: Request, project_id: int, payload: AddressRequest) -> MatchResponse:
@@ -1157,7 +1174,7 @@ def project_checks(request: Request, project_id: int) -> list[dict[str, Any]]:
     ]
 
 
-# ─── Legacy API (kept for backward compat, uses polygons.geojson) ─────────────
+# âââ Legacy API (kept for backward compat, uses polygons.geojson) âââââââââââââ
 
 def empty_feature_collection() -> dict[str, Any]:
     return {"type": "FeatureCollection", "features": []}
