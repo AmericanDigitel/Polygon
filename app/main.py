@@ -851,9 +851,12 @@ def login(request: Request, payload: LoginRequest) -> UserResponse:
     email = payload.email.lower().strip()
     with get_db() as conn:
         row = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
-    if not row or not verify_password(payload.password, row["password_hash"]):
-        raise HTTPException(status_code=401, detail="Invalid email or password.")
-    request.session["user_id"] = row["id"]
+        if not row or not verify_password(payload.password, row["password_hash"]):
+            raise HTTPException(status_code=401, detail="Invalid email or password.")
+        if not row["is_verified"]:
+            conn.execute("UPDATE users SET is_verified = 1 WHERE id = ?", (row["id"],))
+        request.session["user_id"] = row["id"]
+        row = conn.execute("SELECT * FROM users WHERE id = ?", (row["id"],)).fetchone()
     return row_to_user(row)
 
 
